@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ThemeToggle from './ThemeToggle';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmationContext';
 import ExitOrgModal from './ExitOrgModal';
 import JoinOrgScreen from './JoinOrgScreen';
 import NotificationDropdown from './NotificationDropdown';
@@ -14,6 +15,7 @@ import NotificationDropdown from './NotificationDropdown';
 const AssociateDashboard = () => {
     const { user, logout, checkUser } = useAuth();
     const { showToast } = useToast();
+    const { confirm } = useConfirm();
     const [tasks, setTasks] = useState([]);
     const [selectedTask, setSelectedTask] = useState(null);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -41,6 +43,16 @@ const AssociateDashboard = () => {
     if (user && !user.organization) {
         return <JoinOrgScreen />;
     }
+
+    const handleLogout = async () => {
+        const isConfirmed = await confirm({
+            title: 'Sign Out',
+            message: 'Are you sure you want to sign out?',
+            confirmText: 'Sign Out',
+            type: 'danger'
+        });
+        if (isConfirmed) logout();
+    };
 
     const openUpdateModal = (task) => {
         setSelectedTask(task);
@@ -82,6 +94,15 @@ const AssociateDashboard = () => {
 
     const handleSubmitForReview = async (e) => {
         e.preventDefault();
+
+        const isConfirmed = await confirm({
+            title: 'Submit Task?',
+            message: 'Are you sure you want to submit this task for review? You may not be able to edit it afterwards.',
+            confirmText: 'Submit',
+            type: 'info'
+        });
+        if (!isConfirmed) return;
+
         try {
             let fileUrl = null;
             if (selectedFile) {
@@ -228,7 +249,7 @@ const AssociateDashboard = () => {
                             <motion.button
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
-                                onClick={logout}
+                                onClick={handleLogout}
                                 className="p-2 rounded-full text-zinc-500 hover:text-red-500 transition-colors"
                             >
                                 <LogOut size={20} />
@@ -334,7 +355,7 @@ const AssociateDashboard = () => {
                                                         <p className="text-sm text-zinc-400 mb-3 line-clamp-2">{task.description}</p>
 
                                                         <div className="flex items-center gap-2 mb-3">
-                                                            <span className={`px-2 py-1 rounded text-xs font-medium ${task.type === 'Legal' ? 'bg-indigo-500/10 text-indigo-400' :
+                                                            <span className={`px-2 py-1 rounded text-xs font-medium ${task.type === 'Corporate' ? 'bg-indigo-500/10 text-indigo-400' :
                                                                 task.type === 'Registry' ? 'bg-blue-500/10 text-blue-400' :
                                                                     task.type === 'Payment' ? 'bg-emerald-500/10 text-emerald-400' :
                                                                         'bg-zinc-700 text-zinc-300'

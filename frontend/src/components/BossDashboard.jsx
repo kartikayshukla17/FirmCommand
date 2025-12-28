@@ -10,20 +10,20 @@ import Modal from './Modal';
 import ThemeToggle from './ThemeToggle';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmationContext';
 import ExitOrgModal from './ExitOrgModal';
 import NotificationDropdown from './NotificationDropdown';
 import JoinOrgScreen from './JoinOrgScreen';
 
-
 const LeadDashboard = () => {
     const { logout } = useAuth();
     const { showToast } = useToast();
+    const { confirm } = useConfirm();
     const [tasks, setTasks] = useState([]);
     const [users, setUsers] = useState([]);
-    // const [builders, setBuilders] = useState([]);
     const [requests, setRequests] = useState([]);
     const [exitRequests, setExitRequests] = useState([]);
-    const { user, checkUser } = useAuth(); // Get current user for Org Code
+    const { user, checkUser } = useAuth();
 
     // Modal states
     const [showRegisterModal, setShowRegisterModal] = useState(false);
@@ -56,10 +56,19 @@ const LeadDashboard = () => {
         }
     }, [user]);
 
-    // If user has no organization (Free Agent / Recent Exit)
     if (user && !user.organization) {
         return <JoinOrgScreen />;
     }
+
+    const handleLogout = async () => {
+        const isConfirmed = await confirm({
+            title: 'Sign Out',
+            message: 'Are you sure you want to sign out?',
+            confirmText: 'Sign Out',
+            type: 'danger'
+        });
+        if (isConfirmed) logout();
+    };
 
     const fetchRequests = async () => {
         try {
@@ -97,17 +106,6 @@ const LeadDashboard = () => {
         }
     };
 
-    /*
-    const fetchBuilders = async () => {
-        try {
-            const res = await axios.get('/api/tasks/builders/list');
-            setBuilders(res.data);
-        } catch (err) {
-            console.error('Builders not seeded yet');
-        }
-    };
-    */
-
     const handleRegisterUser = async (e) => {
         e.preventDefault();
         try {
@@ -133,8 +131,15 @@ const LeadDashboard = () => {
     };
 
     const handleRejectRequest = async (id) => {
+        const isConfirmed = await confirm({
+            title: 'Reject Request',
+            message: 'Are you sure you want to reject this user request?',
+            confirmText: 'Reject',
+            type: 'danger'
+        });
+        if (!isConfirmed) return;
+
         try {
-            if (!window.confirm('Reject this user request?')) return;
             await axios.post(`/api/organization/requests/${id}/reject`);
             showToast('Request rejected', 'success');
             fetchRequests();
@@ -148,8 +153,8 @@ const LeadDashboard = () => {
             await axios.put(`/api/organization/exit-requests/${id}/decide`, { status });
             showToast(`Exit request ${status}`, 'success');
             fetchExitRequests();
-            fetchUsers(); // User list changes if approved
-            fetchTasks(); // Task assignments change
+            fetchUsers();
+            fetchTasks();
         } catch (err) {
             showToast('Action failed', 'error');
         }
@@ -157,6 +162,18 @@ const LeadDashboard = () => {
 
     const handleCreateTask = async (e) => {
         e.preventDefault();
+
+        if (taskForm.assigned_to) {
+            const assignee = users.find(u => u._id === taskForm.assigned_to);
+            const isConfirmed = await confirm({
+                title: 'Confirm Assignment',
+                message: `Assign task "${taskForm.title}" to ${assignee?.username}?`,
+                confirmText: 'Assign Task',
+                type: 'info'
+            });
+            if (!isConfirmed) return;
+        }
+
         try {
             const payload = {
                 title: taskForm.title,
@@ -183,13 +200,20 @@ const LeadDashboard = () => {
         }
     };
 
-    const copyToClipboard = (text) => {
-        navigator.clipboard.writeText(text);
-        showToast('Copied to clipboard!', 'success');
-    };
-
     const handleUpdateTask = async (e) => {
         e.preventDefault();
+
+        if (editForm.assigned_to && editForm.assigned_to !== selectedTask.assigned_to?._id) {
+            const assignee = users.find(u => u._id === editForm.assigned_to);
+            const isConfirmed = await confirm({
+                title: 'Confirm Re-Assignment',
+                message: `Re-assign task "${editForm.title}" to ${assignee?.username}?`,
+                confirmText: 'Assign Task',
+                type: 'info'
+            });
+            if (!isConfirmed) return;
+        }
+
         try {
             const payload = {
                 title: editForm.title,
@@ -214,6 +238,14 @@ const LeadDashboard = () => {
     };
 
     const handleReview = async (taskId, decision, reason = '') => {
+        const isConfirmed = await confirm({
+            title: `${decision} Task?`,
+            message: `Are you sure you want to mark this task as ${decision}?`,
+            confirmText: decision,
+            type: decision === 'Approved' ? 'success' : 'danger'
+        });
+        if (!isConfirmed) return;
+
         try {
             await axios.patch(`/api/tasks/${taskId}/review`, { decision, reason });
             showToast(`Task ${decision}d successfully!`, 'success');
@@ -225,7 +257,14 @@ const LeadDashboard = () => {
     };
 
     const handleDeleteUser = async (userId) => {
-        if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+        const isConfirmed = await confirm({
+            title: 'Delete User',
+            message: 'Are you sure you want to delete this user? This action cannot be undone.',
+            confirmText: 'Delete User',
+            type: 'danger'
+        });
+        if (!isConfirmed) return;
+
         try {
             await axios.delete(`/api/auth/users/${userId}`);
             showToast('User deleted successfully', 'success');
@@ -238,7 +277,6 @@ const LeadDashboard = () => {
     const openTaskDetail = (task) => {
         setSelectedTask(task);
         setIsEditing(false);
-        // Pre-fill edit form
         setEditForm({
             title: task.title,
             description: task.description,
@@ -266,29 +304,6 @@ const LeadDashboard = () => {
         { title: 'Completed', status: 'Completed', color: 'green', icon: CheckCircle },
         { title: 'Rejected', status: 'Rejected', color: 'red', icon: XCircle },
     ];
-
-    const colorVariants = {
-        amber: {
-            light: 'bg-gradient-to-r from-amber-400 to-orange-500 text-white',
-            dark: 'dark:bg-amber-500/10 dark:text-amber-200 dark:border-amber-500/20 dark:ring-amber-500/20 dark:bg-none'
-        },
-        blue: {
-            light: 'bg-gradient-to-r from-blue-400 to-cyan-500 text-white',
-            dark: 'dark:bg-blue-500/10 dark:text-blue-200 dark:border-blue-500/20 dark:ring-blue-500/20 dark:bg-none'
-        },
-        purple: {
-            light: 'bg-gradient-to-r from-purple-400 to-pink-500 text-white',
-            dark: 'dark:bg-purple-500/10 dark:text-purple-200 dark:border-purple-500/20 dark:ring-purple-500/20 dark:bg-none'
-        },
-        green: {
-            light: 'bg-gradient-to-r from-green-400 to-emerald-500 text-white',
-            dark: 'dark:bg-green-500/10 dark:text-green-200 dark:border-green-500/20 dark:ring-green-500/20 dark:bg-none'
-        },
-        red: {
-            light: 'bg-gradient-to-r from-red-400 to-rose-500 text-white',
-            dark: 'dark:bg-red-500/10 dark:text-red-200 dark:border-red-500/20 dark:ring-red-500/20 dark:bg-none'
-        }
-    };
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -472,7 +487,7 @@ const LeadDashboard = () => {
                             <motion.button
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
-                                onClick={logout}
+                                onClick={handleLogout}
                                 className="bg-red-600/10 hover:bg-red-600/20 text-red-500 border border-red-600/20 px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 text-sm font-medium"
                                 title="Sign Out"
                             >
@@ -541,7 +556,6 @@ const LeadDashboard = () => {
                 </div>
 
                 {/* Kanban Board */}
-                {/* Kanban Board */}
                 <motion.div variants={itemVariants}>
                     <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                         <TrendingUp className="text-indigo-500" size={20} />
@@ -592,7 +606,7 @@ const LeadDashboard = () => {
                                                         <h4 className="font-medium text-zinc-200 mb-2 group-hover:text-indigo-400 transition-colors text-sm">{task.title}</h4>
                                                         <p className="text-xs text-zinc-500 mb-3 line-clamp-2">{task.description}</p>
                                                         <div className="flex items-center justify-between mt-auto">
-                                                            <span className={`px-2 py-0.5 rounded text-[10px] font-medium border ${task.type === 'Legal' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                                                            <span className={`px-2 py-0.5 rounded text-[10px] font-medium border ${task.type === 'Corporate' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
                                                                 task.type === 'Registry' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
                                                                     task.type === 'Payment' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
                                                                         'bg-zinc-700/30 text-zinc-400 border-zinc-700'
@@ -622,7 +636,6 @@ const LeadDashboard = () => {
                     </div>
                 </motion.div>
 
-                {/* Team Section */}
                 {/* Team Section */}
                 <motion.div variants={itemVariants}>
                     <h2 className="text-xl font-bold text-white mb-4">Team Members</h2>
@@ -784,7 +797,7 @@ const LeadDashboard = () => {
                                         <option value="Custom">Custom</option>
                                         <option value="Registry">Registry</option>
                                         <option value="Payment">Payment</option>
-                                        <option value="Legal">Legal</option>
+                                        <option value="Corporate">Corporate</option>
                                     </select>
                                 </div>
                                 <div>
@@ -813,9 +826,6 @@ const LeadDashboard = () => {
                                             onChange={(e) => setTaskForm({ ...taskForm, builder: e.target.value })}
                                         >
                                             <option value="">Select Builder...</option>
-                                            {/* builders.map(builder => (
-                                                <option key={builder._id} value={builder.name}>{builder.name}</option>
-                                            )) */}
                                         </select>
                                     </div>
                                     <div>
@@ -866,8 +876,6 @@ const LeadDashboard = () => {
                 )}
             </AnimatePresence>
 
-
-
             <AnimatePresence>
                 {selectedTask && showDetailModal && (
                     <Modal isOpen={showDetailModal} onClose={() => setShowDetailModal(false)} title={isEditing ? 'Edit Task' : selectedTask.title}>
@@ -879,7 +887,14 @@ const LeadDashboard = () => {
                                         {selectedTask.status !== 'Completed' && (
                                             <button
                                                 onClick={async () => {
-                                                    if (!window.confirm('Mark this task as Completed?')) return;
+                                                    const isConfirmed = await confirm({
+                                                        title: 'Complete Task',
+                                                        message: 'Market this task as completed?',
+                                                        confirmText: 'Complete',
+                                                        type: 'success'
+                                                    });
+                                                    if (!isConfirmed) return;
+
                                                     try {
                                                         await axios.patch(`/api/tasks/${selectedTask._id}`, { status: 'Completed' });
                                                         showToast('Task marked as Completed!', 'success');
@@ -926,46 +941,13 @@ const LeadDashboard = () => {
                                         <h3 className="font-semibold mb-1 text-white text-xs uppercase tracking-wide opacity-80">Assigned By</h3>
                                         <p className="text-zinc-300 font-medium">{selectedTask.assigned_by?.username || 'N/A'}</p>
                                     </div>
-                                    <div>
-                                        <h3 className="font-semibold mb-1 text-white text-xs uppercase tracking-wide opacity-80">Created</h3>
-                                        <p className="text-zinc-300 text-sm font-mono">{new Date(selectedTask.createdAt).toLocaleString()}</p>
-                                    </div>
-                                    {selectedTask.started_at && (
-                                        <div>
-                                            <h3 className="font-semibold mb-1 text-white text-xs uppercase tracking-wide opacity-80">Started</h3>
-                                            <p className="text-zinc-300 text-sm font-mono">{new Date(selectedTask.started_at).toLocaleString()}</p>
-                                        </div>
-                                    )}
-                                    {selectedTask.submitted_at && (
-                                        <div>
-                                            <h3 className="font-semibold mb-1 text-white text-xs uppercase tracking-wide opacity-80">Submitted</h3>
-                                            <p className="text-zinc-300 text-sm font-mono">{new Date(selectedTask.submitted_at).toLocaleString()}</p>
-                                        </div>
-                                    )}
-                                    {selectedTask.completed_at && (
-                                        <div>
-                                            <h3 className="font-semibold mb-1 text-white text-xs uppercase tracking-wide opacity-80">Completed</h3>
-                                            <p className="text-zinc-300 text-sm font-mono">{new Date(selectedTask.completed_at).toLocaleString()}</p>
-                                        </div>
-                                    )}
                                 </div>
-
-                                {/* Property Details Display */}
-                                {selectedTask.property_filters && (Object.values(selectedTask.property_filters).some(v => v)) && (
-                                    <div className="bg-zinc-800/30 p-4 rounded-lg border border-zinc-800">
-                                        <h3 className="font-semibold mb-3 text-white text-sm uppercase tracking-wide opacity-80">Property Filters</h3>
-                                        <div className="grid grid-cols-2 gap-4 text-sm">
-                                            {selectedTask.property_filters.builder && <p><span className="text-zinc-500">Builder:</span> <span className="text-zinc-200">{selectedTask.property_filters.builder}</span></p>}
-                                            {selectedTask.property_filters.property_type && <p><span className="text-zinc-500">Type:</span> <span className="text-zinc-200">{selectedTask.property_filters.property_type}</span></p>}
-                                            {selectedTask.property_filters.category && <p><span className="text-zinc-500">Category:</span> <span className="text-zinc-200">{selectedTask.property_filters.category}</span></p>}
-                                            {selectedTask.property_filters.sector && <p><span className="text-zinc-500">Sector:</span> <span className="text-zinc-200">{selectedTask.property_filters.sector}</span></p>}
-                                        </div>
-                                    </div>
-                                )}
 
                                 {selectedTask.proof_of_work && (
                                     <div>
-                                        <h3 className="font-semibold mb-2 text-white text-sm uppercase tracking-wide opacity-80">Proof of Work</h3>
+                                        <h3 className="font-semibold mb-2 text-white text-sm uppercase tracking-wide opacity-80 flex items-center gap-2">
+                                            <Briefcase size={16} /> Proof of Work
+                                        </h3>
                                         <div className="text-zinc-300 bg-zinc-800/50 p-4 rounded-lg border border-zinc-800 whitespace-pre-wrap font-mono text-sm">
                                             {selectedTask.proof_of_work.split(/(\/api\/tasks\/files\/[a-f0-9]+)/gi).map((part, i) => (
                                                 part.match(/\/api\/tasks\/files\/[a-f0-9]+/i) ? (
@@ -985,7 +967,7 @@ const LeadDashboard = () => {
                                 {selectedTask.status === 'Under Review' && (
                                     <div className="flex gap-3 pt-6 border-t border-zinc-800">
                                         <button
-                                            onClick={() => handleReview(selectedTask._id, 'approve', 'Looks good!')}
+                                            onClick={() => handleReview(selectedTask._id, 'Approved', 'Looks good!')}
                                             className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-lg font-medium transition-colors shadow-lg shadow-emerald-600/20"
                                         >
                                             Approve
@@ -993,7 +975,7 @@ const LeadDashboard = () => {
                                         <button
                                             onClick={() => {
                                                 const reason = prompt('Reason for rejection:');
-                                                if (reason) handleReview(selectedTask._id, 'reject', reason);
+                                                if (reason) handleReview(selectedTask._id, 'Rejected', reason);
                                             }}
                                             className="flex-1 bg-red-600 hover:bg-red-500 text-white py-2.5 rounded-lg font-medium transition-colors shadow-lg shadow-red-600/20"
                                         >
@@ -1034,7 +1016,7 @@ const LeadDashboard = () => {
                                             <option value="Custom">Custom</option>
                                             <option value="Registry">Registry</option>
                                             <option value="Payment">Payment</option>
-                                            <option value="Legal">Legal</option>
+                                            <option value="Corporate">Corporate</option>
                                         </select>
                                     </div>
                                     <div>
@@ -1063,9 +1045,6 @@ const LeadDashboard = () => {
                                                 onChange={(e) => setEditForm({ ...editForm, builder: e.target.value })}
                                             >
                                                 <option value="">Select Builder...</option>
-                                                {/* builders.map(builder => (
-                                                    <option key={builder._id} value={builder.name}>{builder.name}</option>
-                                                )) */}
                                             </select>
                                         </div>
                                         <div>
@@ -1105,7 +1084,6 @@ const LeadDashboard = () => {
                                                 onChange={(e) => setEditForm({ ...editForm, sector: e.target.value })}
                                             />
                                         </div>
-
                                     </div>
                                 </div>
                                 <div className="flex gap-3 pt-6 border-t border-zinc-800">
@@ -1128,6 +1106,7 @@ const LeadDashboard = () => {
                     </Modal>
                 )}
             </AnimatePresence>
+
             {/* Exit Org Modal */}
             <ExitOrgModal
                 isOpen={showExitModal}
@@ -1135,7 +1114,7 @@ const LeadDashboard = () => {
                 user={user}
                 isLastLead={users.filter(u => u.role === 'Lead').length === 1}
                 onExitSuccess={async (result) => {
-                    await checkUser(); // Refresh user state
+                    await checkUser();
                     if (result.exited) {
                         showToast('Organization dissolved', 'success');
                     }

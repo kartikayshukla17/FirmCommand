@@ -5,7 +5,7 @@ const taskSchema = new mongoose.Schema({
     description: { type: String },
     type: {
         type: String,
-        enum: ['Registry', 'Custom', 'Payment', 'Legal'],
+        enum: ['Registry', 'Custom', 'Payment', 'Corporate'],
         default: 'Custom'
     },
     property_filters: {

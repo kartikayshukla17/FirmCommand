@@ -211,7 +211,7 @@ const Signup = () => {
                                                         name="orgCode"
                                                         required={mode === 'join'}
                                                         className="w-full bg-zinc-900/50 border border-zinc-700 text-white px-10 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-zinc-600 sm:text-sm uppercase font-mono tracking-wider"
-                                                        placeholder="LAW123"
+                                                        placeholder="CORP123"
                                                         onChange={handleChange}
                                                     />
                                                 </div>
