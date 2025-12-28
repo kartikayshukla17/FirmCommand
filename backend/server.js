@@ -58,6 +58,13 @@ app.get('/', (req, res) => {
 // Error Handler (must be last middleware)
 app.use(errorHandler);
 
-httpServer.listen(PORT, () => {
+const server = httpServer.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err, promise) => {
+    console.log(`Error: ${err.message}`);
+    // Close server & exit process
+    server.close(() => process.exit(1));
 });
