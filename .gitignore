@@ -1,0 +1,23 @@
+# Root Gitignore (Monorepo)
+
+# Dependencies (in subfolders)
+**/node_modules
+**/.pnp
+.pnp.js
+**/yarn-error.log
+
+# Environment Variables
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Builds
+**/dist
+**/build
+
+# Logs
+**/logs
+**/*.log
+
+# Misc
+.DS_Store
