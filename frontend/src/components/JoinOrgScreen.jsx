@@ -57,8 +57,13 @@ const JoinOrgScreen = () => {
                         <h1 className="text-2xl font-bold text-white">Join Organization</h1>
                         <p className="text-zinc-500 text-sm mt-1">Enter an organization code to join</p>
                     </div>
-                    <button onClick={logout} className="text-zinc-500 hover:text-red-500 transition-colors" title="Sign Out">
-                        <LogOut size={20} />
+                    <button
+                        onClick={logout}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors text-sm font-medium border border-zinc-700 hover:border-zinc-600"
+                        title="Sign Out"
+                    >
+                        <LogOut size={16} />
+                        <span>Sign Out</span>
                     </button>
                 </div>
 
