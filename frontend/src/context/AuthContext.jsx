@@ -17,7 +17,13 @@ export const AuthProvider = ({ children }) => {
         const checkUser = async () => {
             try {
                 const res = await axios.get(`${API_URL}/me`);
-                setUser(res.data);
+                // Validation: Ensure we got a real user object, not HTML (from 404/rewrite)
+                if (res.data && res.data._id && res.data.email) {
+                    setUser(res.data);
+                } else {
+                    console.warn("Auth Check returned invalid data (likely HTML from 404):", res.data);
+                    setUser(null);
+                }
             } catch (error) {
                 console.error("Auth Check Failed:", error);
                 setUser(null);
