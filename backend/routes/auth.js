@@ -203,7 +203,7 @@ router.post('/register', asyncHandler(async (req, res, next) => {
         res.cookie('token', generateToken(user._id, user.tokenVersion), {
             httpOnly: true,
             secure: secureFlag,
-            sameSite: 'lax',
+            sameSite: secureFlag ? 'none' : 'lax', // 'none' required for cross-site cookie
             maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
         });
 
@@ -294,7 +294,7 @@ router.post('/login', asyncHandler(async (req, res, next) => {
             res.cookie('token', token, {
                 httpOnly: true,
                 secure: secureFlag,
-                sameSite: 'lax',
+                sameSite: secureFlag ? 'none' : 'lax', // 'none' required for cross-site cookie
                 maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
             });
 
@@ -397,7 +397,7 @@ router.post('/verify-otp', asyncHandler(async (req, res, next) => {
         res.cookie('token', generateToken(user._id, user.tokenVersion), {
             httpOnly: true,
             secure: secureFlag,
-            sameSite: 'lax',
+            sameSite: secureFlag ? 'none' : 'lax', // 'none' required for cross-site cookie
             maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
         });
     }
