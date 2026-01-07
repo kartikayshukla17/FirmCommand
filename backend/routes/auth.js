@@ -84,7 +84,7 @@ router.post('/register', asyncHandler(async (req, res, next) => {
     // Check if user exists
     const userExists = await User.findOne({ email });
     if (userExists) {
-        return next(new ErrorResponse('User already exists', 400));
+        return next(new ErrorResponse('This email address is already registered. Please log in instead.', 400));
     }
 
     let organization;
@@ -312,7 +312,7 @@ router.post('/login', asyncHandler(async (req, res, next) => {
         // Fallback for unknown roles
         return next(new ErrorResponse('Role not recognized', 400));
     } else {
-        return next(new ErrorResponse('Invalid email or password', 401));
+        return next(new ErrorResponse('Invalid email or password. Please try again.', 401));
     }
 }));
 

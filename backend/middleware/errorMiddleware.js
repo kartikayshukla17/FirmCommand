@@ -15,8 +15,10 @@ const errorHandler = (err, req, res, next) => {
 
     // Mongoose duplicate key
     if (err.code === 11000) {
-        const message = 'Duplicate field value entered';
-        error = new ErrorResponse(message, 400);
+        // Extract the duplicate field (usually email or name)
+        const field = Object.keys(err.keyValue)[0];
+        const message = `${field.charAt(0).toUpperCase() + field.slice(1)} already exists. Please use a different one.`;
+        error = new ErrorResponse(message, 400); // 409 Conflict might be better but 400 is safer for frontend compat
     }
 
     // Mongoose validation error
