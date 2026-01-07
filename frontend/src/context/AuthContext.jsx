@@ -11,10 +11,6 @@ export const AuthProvider = ({ children }) => {
 
     // Configure axios to send cookies with every request
     axios.defaults.withCredentials = true;
-    // Set Base URL from Env (for Production) or fallback to relative (for Dev Proxy)
-    axios.defaults.baseURL = import.meta.env.VITE_API_URL || '';
-
-    // API_URL can remain acceptable as relative path since baseURL handles the domain
     const API_URL = '/api/auth';
 
     useEffect(() => {
