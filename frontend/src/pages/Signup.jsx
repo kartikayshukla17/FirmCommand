@@ -158,6 +158,9 @@ const Signup = () => {
                                     "OTP sent to your email. Please check."
                                 )}
                             </div>
+                            <p className="text-zinc-400 text-sm mb-4">
+                                For your security, please verify your identity by entering the code sent to your email.
+                            </p>
                             <div className="space-y-1.5">
                                 <label className="text-sm font-medium text-zinc-300">Enter Verification Code</label>
                                 <input
@@ -317,7 +320,9 @@ const Signup = () => {
                     )}
 
                     <div className="mt-8 text-center border-t border-zinc-700/50 pt-6">
-                        <p className="text-zinc-500 text-sm">
+                        <div className="absolute bottom-6 text-zinc-600 text-xs">
+                            &copy; 2026 FirmCommand Inc.
+                        </div>                     <p className="text-zinc-500 text-sm">
                             Already have an account?{' '}
                             <Link to="/login" className="text-indigo-400 font-medium hover:text-indigo-300 transition-colors">
                                 Sign in

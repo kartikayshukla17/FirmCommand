@@ -168,20 +168,34 @@ const Login = () => {
                                 </div>
                             </>
                         ) : (
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-medium text-zinc-300">Enter OTP</label>
-                                <div className="relative group">
-                                    <input
-                                        type="text"
-                                        required
-                                        className="w-full bg-zinc-800/50 border border-zinc-700 text-white px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-zinc-600 font-mono text-center tracking-widest text-lg"
-                                        placeholder="123456"
-                                        value={otp}
-                                        onChange={(e) => setOtp(e.target.value)}
-                                        maxLength={6}
-                                    />
+                            <div className="space-y-4">
+                                <div className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-4 py-3 rounded-lg mb-6 text-sm">
+                                    {debugOtp ? (
+                                        <span className="font-semibold">DEV OTP Code: {debugOtp}</span>
+                                    ) : (
+                                        "OTP sent to your email. Please check."
+                                    )}
                                 </div>
-                                <p className="text-xs text-zinc-500 text-center mt-2">Check your email for the verification code.</p>
+
+                                <p className="text-zinc-400 text-sm mb-4">
+                                    For your security, please verify your identity by entering the code sent to your email.
+                                </p>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-sm font-medium text-zinc-300">Enter OTP</label>
+                                    <div className="relative group">
+                                        <input
+                                            type="text"
+                                            required
+                                            className="w-full bg-zinc-800/50 border border-zinc-700 text-white px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-zinc-600 font-mono text-center tracking-widest text-lg"
+                                            placeholder="123456"
+                                            value={otp}
+                                            onChange={(e) => setOtp(e.target.value)}
+                                            maxLength={6}
+                                        />
+                                    </div>
+                                    <p className="text-xs text-zinc-500 text-center mt-2">Check your email for the verification code.</p>
+                                </div>
                             </div>
                         )}
 
@@ -209,13 +223,13 @@ const Login = () => {
                             )}
                         </p>
                     </div>
-                </motion.div>
+                </motion.div >
 
                 <div className="absolute bottom-6 text-zinc-600 text-xs">
-                    &copy; 2024 FirmCommand Inc.
+                    &copy; 2026 FirmCommand Inc.
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 
