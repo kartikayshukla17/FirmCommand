@@ -11,6 +11,7 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [otp, setOtp] = useState('');
+    const [debugOtp, setDebugOtp] = useState(null); // Added missing state
     const [showOtp, setShowOtp] = useState(false);
     const [tempUserId, setTempUserId] = useState(null);
     const [error, setError] = useState('');
@@ -41,7 +42,7 @@ const Login = () => {
                     setTempUserId(res.tempId);
                     // For demo/dev purposes where email service is unreliable
                     if (res.debugOtp) {
-                        setError(`DEV OTP Code: ${res.debugOtp}`);
+                        setDebugOtp(res.debugOtp); // Update state instead of error
                     }
                     setIsLoading(false);
                 } else {
