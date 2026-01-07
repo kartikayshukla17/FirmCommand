@@ -195,7 +195,9 @@ const Login = () => {
                                             maxLength={6}
                                         />
                                     </div>
-                                    <p className="text-xs text-zinc-500 text-center mt-2">Check your email for the verification code.</p>
+                                    <p className="text-xs text-zinc-500 text-center mt-2">
+                                        <strong>Demo Note:</strong> We are displaying the OTP code here because email delivery via Nodemailer is restricted on Render's free hosting tier without a verified domain.
+                                    </p>
                                 </div>
                             </div>
                         )}

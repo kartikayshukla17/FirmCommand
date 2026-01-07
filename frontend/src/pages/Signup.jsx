@@ -181,7 +181,7 @@ const Signup = () => {
                                 {isLoading ? 'Verifying...' : 'Verify & Continue'}
                             </button>
                             <p className="text-xs text-zinc-500 text-center mt-4 px-2">
-                                Note: Due to restrictions on the free deployment tier and the lack of a verified domain, email delivery via Nodemailer may fail. If you don't receive a code, please refer to the <strong>DEV OTP Code</strong> displayed above.
+                                <strong>Demo Note:</strong> We are displaying the OTP code here because email delivery via Nodemailer is restricted on Render's free hosting tier without a verified domain.
                             </p>
                         </form>
                     ) : (
