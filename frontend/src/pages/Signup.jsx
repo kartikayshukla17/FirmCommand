@@ -18,6 +18,7 @@ const Signup = () => {
 
     // OTP States
     const [otp, setOtp] = useState('');
+    const [debugOtp, setDebugOtp] = useState(null); // New state for debug OTP
     const [showOtp, setShowOtp] = useState(false);
     const [tempUserId, setTempUserId] = useState(null);
 
@@ -51,6 +52,9 @@ const Signup = () => {
                 setShowOtp(true);
                 setTempUserId(res.data.tempId);
                 setSuccessMsg(res.data.message);
+                if (res.data.debugOtp) {
+                    setDebugOtp(res.data.debugOtp);
+                }
                 setIsLoading(false);
                 return;
             }
@@ -75,8 +79,8 @@ const Signup = () => {
         setIsLoading(true);
         setError('');
         try {
-            await verifyOtp(tempUserId, otp);
-            navigate('/dashboard');
+            await verifyOtp(tempUserId, otp, 'signup');
+            navigate('/login', { state: { message: 'Verification successful! Please log in.' } });
         } catch (err) {
             setError(err.response?.data?.message || 'OTP verification failed');
             setIsLoading(false);
@@ -148,7 +152,11 @@ const Signup = () => {
                     {showOtp ? (
                         <form onSubmit={handleVerifyOtp} className="space-y-4">
                             <div className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-4 py-3 rounded-lg mb-6 text-sm">
-                                OTP sent to your email. Please check.
+                                {debugOtp ? (
+                                    <span className="font-semibold">DEV OTP Code: {debugOtp}</span>
+                                ) : (
+                                    "OTP sent to your email. Please check."
+                                )}
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-sm font-medium text-zinc-300">Enter Verification Code</label>

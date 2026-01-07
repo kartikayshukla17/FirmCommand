@@ -20,6 +20,14 @@ const generateToken = (id, version = 0) => {
     });
 };
 
+// Helper: Hash OTP
+const hashOtp = (otp) => {
+    return crypto
+        .createHash('sha256')
+        .update(otp)
+        .digest('hex');
+};
+
 // @desc    Check if system needs setup (0 users)
 // @route   GET /api/auth/status
 // @access  Public
@@ -158,7 +166,7 @@ router.post('/register', asyncHandler(async (req, res, next) => {
     // If Lead, Send OTP
     if (userRole === 'Lead') {
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        user.otp = otp;
+        user.otp = hashOtp(otp); // Store Hash
         user.otpExpires = Date.now() + 10 * 60 * 1000; // 10 mins
         await user.save();
 
@@ -187,9 +195,14 @@ router.post('/register', asyncHandler(async (req, res, next) => {
     // Response
     if (userStatus === 'Active') {
         // Set Cookie
+        // Set Cookie
+        const secureFlag = process.env.NODE_ENV === 'production';
+        console.log('--- Register Cookie Debug ---');
+        console.log('Setting token cookie with secure:', secureFlag);
+
         res.cookie('token', generateToken(user._id, user.tokenVersion), {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: secureFlag,
             sameSite: 'lax',
             maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
         });
@@ -222,6 +235,9 @@ router.post('/login', asyncHandler(async (req, res, next) => {
         if (user.status === 'Pending') {
             return next(new ErrorResponse('Account is pending approval from an administrator.', 403));
         }
+        if (user.status === 'Pending_OTP') {
+            return next(new ErrorResponse('Account verification pending. Please complete the OTP process.', 403));
+        }
 
         // Auto-Migrate Legacy Roles
         if (user.role === 'Boss') {
@@ -234,7 +250,7 @@ router.post('/login', asyncHandler(async (req, res, next) => {
         // OTP Logic for Lead (or Boss)
         if (['Lead', 'Boss'].includes(user.role)) {
             const otp = Math.floor(100000 + Math.random() * 900000).toString();
-            user.otp = otp;
+            user.otp = hashOtp(otp); // Store Hash
             user.otpExpires = Date.now() + 10 * 60 * 1000; // 10 mins
             await user.save();
 
@@ -270,9 +286,14 @@ router.post('/login', asyncHandler(async (req, res, next) => {
             } catch (ignored) { }
 
             // Set Cookie
+            // Set Cookie
+            const secureFlag = process.env.NODE_ENV === 'production';
+            console.log('--- Login Cookie Debug ---');
+            console.log('Setting token cookie with secure:', secureFlag);
+
             res.cookie('token', token, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
+                secure: secureFlag,
                 sameSite: 'lax',
                 maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
             });
@@ -353,7 +374,9 @@ router.post('/verify-otp', asyncHandler(async (req, res, next) => {
 
     if (!user) return next(new ErrorResponse('User not found', 404));
 
-    if (user.otp !== otp || user.otpExpires < Date.now()) {
+    const hashedOtp = hashOtp(otp);
+
+    if (user.otp !== hashedOtp || user.otpExpires < Date.now()) {
         return next(new ErrorResponse('Invalid or expired OTP', 400));
     }
 
@@ -365,13 +388,19 @@ router.post('/verify-otp', asyncHandler(async (req, res, next) => {
     }
     await user.save();
 
-    // Set Cookie
-    res.cookie('token', generateToken(user._id, user.tokenVersion), {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-    });
+    // Set Cookie ONLY if not 'signup' type (i.e. Login or unspecified)
+    if (req.body.type !== 'signup') {
+        const secureFlag = process.env.NODE_ENV === 'production';
+        console.log('--- Verify-OTP Cookie Debug ---');
+        console.log('Setting token cookie with secure:', secureFlag);
+
+        res.cookie('token', generateToken(user._id, user.tokenVersion), {
+            httpOnly: true,
+            secure: secureFlag,
+            sameSite: 'lax',
+            maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+        });
+    }
 
     res.json({
         _id: user.id,
@@ -496,7 +525,7 @@ router.post('/exit-otp', protect, asyncHandler(async (req, res, next) => {
 
     // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    user.otp = otp;
+    user.otp = hashOtp(otp); // Store Hash
     user.otpExpires = Date.now() + 10 * 60 * 1000; // 10 mins
     await user.save();
 
@@ -524,8 +553,10 @@ router.post('/exit-verify', protect, asyncHandler(async (req, res, next) => {
     const { otp } = req.body;
     const user = req.user;
 
+    const hashedOtp = hashOtp(otp);
+
     // Verify OTP
-    if (user.otp !== otp || user.otpExpires < Date.now()) {
+    if (user.otp !== hashedOtp || user.otpExpires < Date.now()) {
         return next(new ErrorResponse('Invalid or expired OTP', 400));
     }
 

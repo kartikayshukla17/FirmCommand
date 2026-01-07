@@ -32,7 +32,7 @@ const Login = () => {
         setError('');
         try {
             if (showOtp) {
-                await verifyOtp(tempUserId, otp);
+                await verifyOtp(tempUserId, otp, 'login');
                 navigate('/dashboard');
             } else {
                 const res = await login(email, password);

@@ -39,6 +39,10 @@ The application has been refactored to use professional titles:
 *   **Data Isolation**: Strict separation of data between different law firms.
 *   **Smart Dashboards**: Tailored views for Leads (Management view) and Associates (Work view).
 *   **Secure Authentication**: JWT-based Auth with HTTP-Only Cookies and Multi-Factor Authentication (OTP).
+*   **Performance Optimized**:
+    *   **Lazy Loading**: Route-based code splitting for faster initial load.
+    *   **Skeleton UI**: Visual placeholders for improved perceived performance during data fetching.
+    *   **Conditional Rendering**: Smooth state transitions.
 
 ## 🛠️ Tech Stack
 

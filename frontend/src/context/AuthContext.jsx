@@ -25,7 +25,9 @@ export const AuthProvider = ({ children }) => {
                     setUser(null);
                 }
             } catch (error) {
-                console.error("Auth Check Failed:", error);
+                if (error.response?.status !== 401) {
+                    console.error("Auth Check Failed:", error);
+                }
                 setUser(null);
             } finally {
                 console.log('Auth check finished, setLoading false');
@@ -44,9 +46,11 @@ export const AuthProvider = ({ children }) => {
         return res.data;
     };
 
-    const verifyOtp = async (userId, otp) => {
-        const res = await axios.post(`${API_URL}/verify-otp`, { userId, otp });
-        setUser(res.data);
+    const verifyOtp = async (userId, otp, type = 'login') => {
+        const res = await axios.post(`${API_URL}/verify-otp`, { userId, otp, type });
+        if (type === 'login') {
+            setUser(res.data);
+        }
         return res.data;
     };
 

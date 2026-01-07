@@ -10,6 +10,7 @@ import { useConfirm } from '../context/ConfirmationContext';
 import ExitOrgModal from './ExitOrgModal';
 import JoinOrgScreen from './JoinOrgScreen';
 import NotificationDropdown from './NotificationDropdown';
+import Skeleton from './Skeleton';
 
 
 const AssociateDashboard = () => {
@@ -17,6 +18,7 @@ const AssociateDashboard = () => {
     const { showToast } = useToast();
     const { confirm } = useConfirm();
     const [tasks, setTasks] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [selectedTask, setSelectedTask] = useState(null);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [showExitModal, setShowExitModal] = useState(false);
@@ -26,7 +28,8 @@ const AssociateDashboard = () => {
 
     useEffect(() => {
         if (user && user.organization) {
-            fetchTasks();
+            setIsLoading(true);
+            fetchTasks().finally(() => setIsLoading(false));
         }
     }, [user]);
 
@@ -265,152 +268,178 @@ const AssociateDashboard = () => {
                 initial="hidden"
                 animate="visible"
             >
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {[
-                        { title: 'My Tasks', value: tasks.length, icon: FileText, color: 'text-indigo-400' },
-                        { title: 'Pending', value: getTasksByStatus('Pending').length, icon: Clock, color: 'text-amber-400' },
-                        { title: 'Under Review', value: getTasksByStatus('Under Review').length, icon: Eye, color: 'text-purple-400' },
-                        { title: 'Completed', value: getTasksByStatus('Completed').length, icon: CheckCircle, color: 'text-emerald-400' }
-                    ].map((stat, idx) => (
-                        <motion.div
-                            key={idx}
-                            variants={itemVariants}
-                            whileHover={{ y: -5 }}
-                            className="bg-zinc-900/50 backdrop-blur-sm rounded-xl p-6 border border-zinc-800"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className={`p-3 rounded-lg bg-zinc-800/50`}>
-                                    <stat.icon className={stat.color} size={24} />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-zinc-500">{stat.title}</p>
-                                    <motion.p
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        transition={{ type: "spring", stiffness: 100 }}
-                                        className="text-2xl font-bold text-white"
-                                    >
-                                        {stat.value}
-                                    </motion.p>
-                                </div>
+                {isLoading ? (
+                    <div className="space-y-8">
+                        {/* Stats Skeleton */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {[...Array(4)].map((_, i) => (
+                                <Skeleton key={i} className="h-24 w-full rounded-xl" />
+                            ))}
+                        </div>
+                        {/* Task Board Skeleton */}
+                        <div className="space-y-4">
+                            <Skeleton className="h-8 w-48 rounded" />
+                            <div className="flex gap-4 overflow-hidden">
+                                {[...Array(3)].map((_, i) => (
+                                    <div key={i} className="w-80 flex-shrink-0 space-y-3">
+                                        <Skeleton className="h-10 w-full rounded-xl" />
+                                        <Skeleton className="h-32 w-full rounded-lg" />
+                                        <Skeleton className="h-32 w-full rounded-lg" />
+                                    </div>
+                                ))}
                             </div>
-                        </motion.div>
-                    ))}
-                </div>
-
-                {/* Kanban Board */}
-                <motion.div variants={itemVariants}>
-                    <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                        <TrendingUp className="text-indigo-500" />
-                        My Task Board
-                    </h2>
-                    <div className="flex gap-4 overflow-x-auto pb-4">
-                        {statusColumns.map((column, colIdx) => {
-                            const columnTasks = getTasksByStatus(column.status);
-                            const Icon = column.icon;
-
-                            // Simple color mapping without separate light/dark variants
-                            const headerColors = {
-                                amber: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-                                blue: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
-                                purple: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-                                green: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-                                red: 'bg-red-500/10 text-red-500 border-red-500/20'
-                            };
-
-                            return (
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        {/* Stats Cards */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {[
+                                { title: 'My Tasks', value: tasks.length, icon: FileText, color: 'text-indigo-400' },
+                                { title: 'Pending', value: getTasksByStatus('Pending').length, icon: Clock, color: 'text-amber-400' },
+                                { title: 'Under Review', value: getTasksByStatus('Under Review').length, icon: Eye, color: 'text-purple-400' },
+                                { title: 'Completed', value: getTasksByStatus('Completed').length, icon: CheckCircle, color: 'text-emerald-400' }
+                            ].map((stat, idx) => (
                                 <motion.div
-                                    key={column.status}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: colIdx * 0.1 }}
-                                    className="flex-shrink-0 w-80"
+                                    key={idx}
+                                    variants={itemVariants}
+                                    whileHover={{ y: -5 }}
+                                    className="bg-zinc-900/50 backdrop-blur-sm rounded-xl p-6 border border-zinc-800"
                                 >
-                                    <div className="bg-zinc-900/50 backdrop-blur-sm rounded-xl p-4 border border-zinc-800 h-full">
-                                        <div className={`rounded-lg p-3 mb-4 border ${headerColors[column.color]}`}>
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <Icon size={20} />
-                                                    <h3 className="font-bold">{column.title}</h3>
-                                                </div>
-                                                <span className="bg-zinc-900/50 px-2 py-0.5 rounded text-sm font-semibold">
-                                                    {columnTasks.length}
-                                                </span>
-                                            </div>
+                                    <div className="flex items-center gap-4">
+                                        <div className={`p-3 rounded-lg bg-zinc-800/50`}>
+                                            <stat.icon className={stat.color} size={24} />
                                         </div>
-                                        <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-zinc-700">
-                                            <AnimatePresence>
-                                                {columnTasks.map(task => (
-                                                    <motion.div
-                                                        key={task._id}
-                                                        layoutId={task._id}
-                                                        initial={{ opacity: 0, scale: 0.9 }}
-                                                        animate={{ opacity: 1, scale: 1 }}
-                                                        exit={{ opacity: 0, scale: 0.9 }}
-                                                        whileHover={{ scale: 1.02 }}
-                                                        className="bg-zinc-800 rounded-lg p-4 border border-zinc-700 hover:border-indigo-500/50 transition-all duration-200"
-                                                    >
-                                                        <h4 className="font-bold text-zinc-100 mb-2">{task.title}</h4>
-                                                        <p className="text-sm text-zinc-400 mb-3 line-clamp-2">{task.description}</p>
-
-                                                        <div className="flex items-center gap-2 mb-3">
-                                                            <span className={`px-2 py-1 rounded text-xs font-medium ${task.type === 'Corporate' ? 'bg-indigo-500/10 text-indigo-400' :
-                                                                task.type === 'Registry' ? 'bg-blue-500/10 text-blue-400' :
-                                                                    task.type === 'Payment' ? 'bg-emerald-500/10 text-emerald-400' :
-                                                                        'bg-zinc-700 text-zinc-300'
-                                                                }`}>
-                                                                {task.type}
-                                                            </span>
-                                                        </div>
-
-                                                        {task.proof_of_work && (
-                                                            <div className="mb-3 p-2 bg-indigo-500/10 rounded text-xs text-indigo-300 border border-indigo-500/20">
-                                                                ✓ Proof attached
-                                                            </div>
-                                                        )}
-
-                                                        <div className="text-xs text-zinc-500 mb-3">
-                                                            Created: {new Date(task.createdAt).toLocaleDateString()}
-                                                        </div>
-
-                                                        {task.status === 'Pending' && (
-                                                            <button
-                                                                onClick={() => handleStartTask(task)}
-                                                                className="w-full bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium flex items-center justify-center gap-2 mb-2"
-                                                            >
-                                                                <Play size={16} /> Start Task
-                                                            </button>
-                                                        )}
-
-                                                        {task.status !== 'Completed' && task.status !== 'Under Review' && (
-                                                            <button
-                                                                onClick={() => openUpdateModal(task)}
-                                                                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium flex items-center justify-center gap-2"
-                                                            >
-                                                                <Send size={16} /> Update Progress
-                                                            </button>
-                                                        )}
-                                                        {task.status === 'Rejected' && (
-                                                            <div className="mt-2 p-2 bg-red-500/10 border border-red-500/20 rounded-lg">
-                                                                <p className="text-red-400 text-xs font-medium">Rejected - Update and resubmit</p>
-                                                            </div>
-                                                        )}
-                                                    </motion.div>
-                                                ))}
-                                            </AnimatePresence>
-                                            {columnTasks.length === 0 && (
-                                                <div className="text-center py-8 text-zinc-600">
-                                                    <p className="text-sm">No tasks</p>
-                                                </div>
-                                            )}
+                                        <div>
+                                            <p className="text-sm font-medium text-zinc-500">{stat.title}</p>
+                                            <motion.p
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                transition={{ type: "spring", stiffness: 100 }}
+                                                className="text-2xl font-bold text-white"
+                                            >
+                                                {stat.value}
+                                            </motion.p>
                                         </div>
                                     </div>
                                 </motion.div>
-                            );
-                        })}
-                    </div>
-                </motion.div>
+                            ))}
+                        </div>
+
+                        {/* Kanban Board */}
+                        <motion.div variants={itemVariants}>
+                            <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                                <TrendingUp className="text-indigo-500" />
+                                My Task Board
+                            </h2>
+                            <div className="flex gap-4 overflow-x-auto pb-4">
+                                {statusColumns.map((column, colIdx) => {
+                                    const columnTasks = getTasksByStatus(column.status);
+                                    const Icon = column.icon;
+
+                                    // Simple color mapping without separate light/dark variants
+                                    const headerColors = {
+                                        amber: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+                                        blue: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
+                                        purple: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+                                        green: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+                                        red: 'bg-red-500/10 text-red-500 border-red-500/20'
+                                    };
+
+                                    return (
+                                        <motion.div
+                                            key={column.status}
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: colIdx * 0.1 }}
+                                            className="flex-shrink-0 w-80"
+                                        >
+                                            <div className="bg-zinc-900/50 backdrop-blur-sm rounded-xl p-4 border border-zinc-800 h-full">
+                                                <div className={`rounded-lg p-3 mb-4 border ${headerColors[column.color]}`}>
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-2">
+                                                            <Icon size={20} />
+                                                            <h3 className="font-bold">{column.title}</h3>
+                                                        </div>
+                                                        <span className="bg-zinc-900/50 px-2 py-0.5 rounded text-sm font-semibold">
+                                                            {columnTasks.length}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-zinc-700">
+                                                    <AnimatePresence>
+                                                        {columnTasks.map(task => (
+                                                            <motion.div
+                                                                key={task._id}
+                                                                layoutId={task._id}
+                                                                initial={{ opacity: 0, scale: 0.9 }}
+                                                                animate={{ opacity: 1, scale: 1 }}
+                                                                exit={{ opacity: 0, scale: 0.9 }}
+                                                                whileHover={{ scale: 1.02 }}
+                                                                className="bg-zinc-800 rounded-lg p-4 border border-zinc-700 hover:border-indigo-500/50 transition-all duration-200"
+                                                            >
+                                                                <h4 className="font-bold text-zinc-100 mb-2">{task.title}</h4>
+                                                                <p className="text-sm text-zinc-400 mb-3 line-clamp-2">{task.description}</p>
+
+                                                                <div className="flex items-center gap-2 mb-3">
+                                                                    <span className={`px-2 py-1 rounded text-xs font-medium ${task.type === 'Corporate' ? 'bg-indigo-500/10 text-indigo-400' :
+                                                                        task.type === 'Registry' ? 'bg-blue-500/10 text-blue-400' :
+                                                                            task.type === 'Payment' ? 'bg-emerald-500/10 text-emerald-400' :
+                                                                                'bg-zinc-700 text-zinc-300'
+                                                                        }`}>
+                                                                        {task.type}
+                                                                    </span>
+                                                                </div>
+
+                                                                {task.proof_of_work && (
+                                                                    <div className="mb-3 p-2 bg-indigo-500/10 rounded text-xs text-indigo-300 border border-indigo-500/20">
+                                                                        ✓ Proof attached
+                                                                    </div>
+                                                                )}
+
+                                                                <div className="text-xs text-zinc-500 mb-3">
+                                                                    Created: {new Date(task.createdAt).toLocaleDateString()}
+                                                                </div>
+
+                                                                {task.status === 'Pending' && (
+                                                                    <button
+                                                                        onClick={() => handleStartTask(task)}
+                                                                        className="w-full bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium flex items-center justify-center gap-2 mb-2"
+                                                                    >
+                                                                        <Play size={16} /> Start Task
+                                                                    </button>
+                                                                )}
+
+                                                                {task.status !== 'Completed' && task.status !== 'Under Review' && (
+                                                                    <button
+                                                                        onClick={() => openUpdateModal(task)}
+                                                                        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium flex items-center justify-center gap-2"
+                                                                    >
+                                                                        <Send size={16} /> Update Progress
+                                                                    </button>
+                                                                )}
+                                                                {task.status === 'Rejected' && (
+                                                                    <div className="mt-2 p-2 bg-red-500/10 border border-red-500/20 rounded-lg">
+                                                                        <p className="text-red-400 text-xs font-medium">Rejected - Update and resubmit</p>
+                                                                    </div>
+                                                                )}
+                                                            </motion.div>
+                                                        ))}
+                                                    </AnimatePresence>
+                                                    {columnTasks.length === 0 && (
+                                                        <div className="text-center py-8 text-zinc-600">
+                                                            <p className="text-sm">No tasks</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    );
+                                })}
+                            </div>
+                        </motion.div>
+                    </>
+                )}
             </motion.div>
 
             {/* Update Progress Modal */}

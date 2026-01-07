@@ -14,6 +14,7 @@ import { useConfirm } from '../context/ConfirmationContext';
 import ExitOrgModal from './ExitOrgModal';
 import NotificationDropdown from './NotificationDropdown';
 import JoinOrgScreen from './JoinOrgScreen';
+import Skeleton from './Skeleton';
 
 const LeadDashboard = () => {
     const { logout } = useAuth();
@@ -23,6 +24,7 @@ const LeadDashboard = () => {
     const [users, setUsers] = useState([]);
     const [requests, setRequests] = useState([]);
     const [exitRequests, setExitRequests] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const { user, checkUser } = useAuth();
 
     // Modal states
@@ -49,10 +51,22 @@ const LeadDashboard = () => {
 
     useEffect(() => {
         if (user && user.organization) {
-            fetchTasks();
-            fetchUsers();
-            fetchRequests();
-            fetchExitRequests();
+            const loadData = async () => {
+                setIsLoading(true);
+                try {
+                    await Promise.all([
+                        fetchTasks(),
+                        fetchUsers(),
+                        fetchRequests(),
+                        fetchExitRequests()
+                    ]);
+                } catch (error) {
+                    console.error("Error fetching dashboard data", error);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            loadData();
         }
     }, [user]);
 
@@ -516,192 +530,223 @@ const LeadDashboard = () => {
                 </div>
             </div>
 
-            <motion.div
+            <div
                 className="max-w-7xl mx-auto p-6 space-y-8"
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
             >
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {[
-                        { title: 'Total Tasks', value: tasks.length, icon: FileText, color: 'text-indigo-400' },
-                        { title: 'Under Review', value: getTasksByStatus('Under Review').length, icon: Eye, color: 'text-amber-400' },
-                        { title: 'Associates', value: workers.length, icon: Users, color: 'text-emerald-400' },
-                        { title: 'Completed', value: getTasksByStatus('Completed').length, icon: CheckCircle, color: 'text-emerald-400' }
-                    ].map((stat, idx) => (
-                        <motion.div
-                            key={idx}
-                            variants={itemVariants}
-                            whileHover={{ y: -2 }}
-                            className="bg-zinc-800/50 backdrop-blur-sm rounded-xl p-5 border border-zinc-700/50 hover:border-zinc-600 transition-colors"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className={`p-3 rounded-lg bg-zinc-900 border border-zinc-700/50 ${stat.color}`}>
-                                    <stat.icon size={20} />
-                                </div>
-                                <div>
-                                    <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide">{stat.title}</p>
-                                    <motion.p
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        className="text-2xl font-bold text-white mt-1"
-                                    >
-                                        {stat.value}
-                                    </motion.p>
-                                </div>
+                {isLoading ? (
+                    <div className="space-y-8">
+                        {/* Stats Skeleton */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {[...Array(4)].map((_, i) => (
+                                <Skeleton key={i} className="h-24 w-full rounded-xl" />
+                            ))}
+                        </div>
+                        {/* Task Board Skeleton */}
+                        <div className="space-y-4">
+                            <Skeleton className="h-8 w-48 rounded" />
+                            <div className="flex gap-4 overflow-hidden">
+                                {[...Array(3)].map((_, i) => (
+                                    <div key={i} className="w-80 flex-shrink-0 space-y-3">
+                                        <Skeleton className="h-10 w-full rounded-xl" />
+                                        <Skeleton className="h-32 w-full rounded-lg" />
+                                        <Skeleton className="h-32 w-full rounded-lg" />
+                                    </div>
+                                ))}
                             </div>
-                        </motion.div>
-                    ))}
-                </div>
-
-                {/* Kanban Board */}
-                <motion.div variants={itemVariants}>
-                    <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                        <TrendingUp className="text-indigo-500" size={20} />
-                        Task Board
-                    </h2>
-                    <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-900">
-                        {statusColumns.map((column, colIdx) => {
-                            const columnTasks = getTasksByStatus(column.status);
-                            const Icon = column.icon;
-                            // Simplify color mapping for zinc theme
-                            const statusColor = column.status === 'Completed' ? 'text-emerald-400' :
-                                column.status === 'Rejected' ? 'text-red-400' :
-                                    column.status === 'Under Review' ? 'text-amber-400' :
-                                        column.status === 'In Progress' ? 'text-blue-400' : 'text-zinc-400';
-
-                            return (
+                        </div>
+                        {/* Team Skeleton */}
+                        <div className="space-y-4">
+                            <Skeleton className="h-8 w-40 rounded" />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <Skeleton className="h-48 rounded-xl" />
+                                <Skeleton className="h-48 rounded-xl" />
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        {/* Stats Cards */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {[
+                                { title: 'Total Tasks', value: tasks.length, icon: FileText, color: 'text-indigo-400' },
+                                { title: 'Under Review', value: getTasksByStatus('Under Review').length, icon: Eye, color: 'text-amber-400' },
+                                { title: 'Associates', value: workers.length, icon: Users, color: 'text-emerald-400' },
+                                { title: 'Completed', value: getTasksByStatus('Completed').length, icon: CheckCircle, color: 'text-emerald-400' }
+                            ].map((stat, idx) => (
                                 <motion.div
-                                    key={column.status}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: colIdx * 0.1 }}
-                                    className="flex-shrink-0 w-80"
+                                    key={idx}
+                                    variants={itemVariants}
+                                    whileHover={{ y: -2 }}
+                                    className="bg-zinc-800/50 backdrop-blur-sm rounded-xl p-5 border border-zinc-700/50 hover:border-zinc-600 transition-colors"
                                 >
-                                    <div className="bg-zinc-900/40 rounded-xl p-3 border border-zinc-800/50 h-full flex flex-col">
-                                        <div className="flex items-center justify-between mb-4 px-1">
-                                            <div className="flex items-center gap-2">
-                                                <Icon size={16} className={statusColor} />
-                                                <h3 className="font-semibold text-zinc-300 text-sm">{column.title}</h3>
-                                            </div>
-                                            <span className="bg-zinc-800 px-2 py-0.5 rounded text-xs font-medium text-zinc-400 border border-zinc-700">
-                                                {columnTasks.length}
-                                            </span>
+                                    <div className="flex items-center gap-4">
+                                        <div className={`p-3 rounded-lg bg-zinc-900 border border-zinc-700/50 ${stat.color}`}>
+                                            <stat.icon size={20} />
                                         </div>
-
-                                        <div className="space-y-3 flex-1 min-h-[100px]">
-                                            <AnimatePresence>
-                                                {columnTasks.map(task => (
-                                                    <motion.div
-                                                        key={task._id}
-                                                        layoutId={task._id}
-                                                        initial={{ opacity: 0, scale: 0.95 }}
-                                                        animate={{ opacity: 1, scale: 1 }}
-                                                        exit={{ opacity: 0, scale: 0.95 }}
-                                                        whileHover={{ scale: 1.02 }}
-                                                        className="bg-zinc-800 rounded-lg p-4 shadow-sm border border-zinc-700 cursor-pointer group hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/5 transition-all"
-                                                        onClick={() => openTaskDetail(task)}
-                                                    >
-                                                        <h4 className="font-medium text-zinc-200 mb-2 group-hover:text-indigo-400 transition-colors text-sm">{task.title}</h4>
-                                                        <p className="text-xs text-zinc-500 mb-3 line-clamp-2">{task.description}</p>
-                                                        <div className="flex items-center justify-between mt-auto">
-                                                            <span className={`px-2 py-0.5 rounded text-[10px] font-medium border ${task.type === 'Corporate' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
-                                                                task.type === 'Registry' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                                                                    task.type === 'Payment' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                                                                        'bg-zinc-700/30 text-zinc-400 border-zinc-700'
-                                                                }`}>
-                                                                {task.type}
-                                                            </span>
-                                                            {task.assigned_to && (
-                                                                <div className="flex items-center gap-1 text-[10px] text-zinc-500">
-                                                                    <Users size={12} />
-                                                                    <span>{task.assigned_to.username}</span>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </motion.div>
-                                                ))}
-                                            </AnimatePresence>
-                                            {columnTasks.length === 0 && (
-                                                <div className="h-full flex items-center justify-center p-8 border-2 border-dashed border-zinc-800/50 rounded-lg">
-                                                    <p className="text-xs text-zinc-600 font-medium">No tasks</p>
-                                                </div>
-                                            )}
+                                        <div>
+                                            <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide">{stat.title}</p>
+                                            <motion.p
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                className="text-2xl font-bold text-white mt-1"
+                                            >
+                                                {stat.value}
+                                            </motion.p>
                                         </div>
                                     </div>
                                 </motion.div>
-                            );
-                        })}
-                    </div>
-                </motion.div>
+                            ))}
+                        </div>
 
-                {/* Team Section */}
-                <motion.div variants={itemVariants}>
-                    <h2 className="text-xl font-bold text-white mb-4">Team Members</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Leades */}
-                        <motion.div
-                            whileHover={{ y: -2 }}
-                            className="bg-zinc-800/50 backdrop-blur-sm rounded-xl p-6 border border-zinc-700/50"
-                        >
-                            <h3 className="text-sm font-bold text-zinc-300 mb-4 flex items-center gap-2 uppercase tracking-wide">
-                                <Users size={16} className="text-amber-400" />
-                                Leades ({bosses.length})
-                            </h3>
-                            <div className="space-y-3">
-                                {bosses.map(boss => (
-                                    <div key={boss._id} className="bg-zinc-900/50 rounded-lg p-3 border border-zinc-800 flex items-center justify-between">
-                                        <div>
-                                            <p className="font-medium text-zinc-200 text-sm">{boss.username}</p>
-                                            <p className="text-xs text-zinc-500">{boss.email}</p>
-                                        </div>
-                                        <span className="px-2 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded text-[10px] font-bold">
-                                            BOSS
-                                        </span>
-                                    </div>
-                                ))}
+                        {/* Kanban Board */}
+                        <motion.div variants={itemVariants}>
+                            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                                <TrendingUp className="text-indigo-500" size={20} />
+                                Task Board
+                            </h2>
+                            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-900">
+                                {statusColumns.map((column, colIdx) => {
+                                    const columnTasks = getTasksByStatus(column.status);
+                                    const Icon = column.icon;
+                                    // Simplify color mapping for zinc theme
+                                    const statusColor = column.status === 'Completed' ? 'text-emerald-400' :
+                                        column.status === 'Rejected' ? 'text-red-400' :
+                                            column.status === 'Under Review' ? 'text-amber-400' :
+                                                column.status === 'In Progress' ? 'text-blue-400' : 'text-zinc-400';
+
+                                    return (
+                                        <motion.div
+                                            key={column.status}
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: colIdx * 0.1 }}
+                                            className="flex-shrink-0 w-80"
+                                        >
+                                            <div className="bg-zinc-900/40 rounded-xl p-3 border border-zinc-800/50 h-full flex flex-col">
+                                                <div className="flex items-center justify-between mb-4 px-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <Icon size={16} className={statusColor} />
+                                                        <h3 className="font-semibold text-zinc-300 text-sm">{column.title}</h3>
+                                                    </div>
+                                                    <span className="bg-zinc-800 px-2 py-0.5 rounded text-xs font-medium text-zinc-400 border border-zinc-700">
+                                                        {columnTasks.length}
+                                                    </span>
+                                                </div>
+
+                                                <div className="space-y-3 flex-1 min-h-[100px]">
+                                                    <AnimatePresence>
+                                                        {columnTasks.map(task => (
+                                                            <motion.div
+                                                                key={task._id}
+                                                                layoutId={task._id}
+                                                                initial={{ opacity: 0, scale: 0.95 }}
+                                                                animate={{ opacity: 1, scale: 1 }}
+                                                                exit={{ opacity: 0, scale: 0.95 }}
+                                                                whileHover={{ scale: 1.02 }}
+                                                                className="bg-zinc-800 rounded-lg p-4 shadow-sm border border-zinc-700 cursor-pointer group hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/5 transition-all"
+                                                                onClick={() => openTaskDetail(task)}
+                                                            >
+                                                                <h4 className="font-medium text-zinc-200 mb-2 group-hover:text-indigo-400 transition-colors text-sm">{task.title}</h4>
+                                                                <p className="text-xs text-zinc-500 mb-3 line-clamp-2">{task.description}</p>
+                                                                <div className="flex items-center justify-between mt-auto">
+                                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-medium border ${task.type === 'Corporate' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                                                                        task.type === 'Registry' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                                                                            task.type === 'Payment' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                                                                                'bg-zinc-700/30 text-zinc-400 border-zinc-700'
+                                                                        }`}>
+                                                                        {task.type}
+                                                                    </span>
+                                                                    {task.assigned_to && (
+                                                                        <div className="flex items-center gap-1 text-[10px] text-zinc-500">
+                                                                            <Users size={12} />
+                                                                            <span>{task.assigned_to.username}</span>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </motion.div>
+                                                        ))}
+                                                    </AnimatePresence>
+                                                    {columnTasks.length === 0 && (
+                                                        <div className="h-full flex items-center justify-center p-8 border-2 border-dashed border-zinc-800/50 rounded-lg">
+                                                            <p className="text-xs text-zinc-600 font-medium">No tasks</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    );
+                                })}
                             </div>
                         </motion.div>
 
-                        {/* Associates */}
-                        <motion.div
-                            whileHover={{ y: -2 }}
-                            className="bg-zinc-800/50 backdrop-blur-sm rounded-xl p-6 border border-zinc-700/50"
-                        >
-                            <h3 className="text-sm font-bold text-zinc-300 mb-4 flex items-center gap-2 uppercase tracking-wide">
-                                <Users size={16} className="text-indigo-400" />
-                                Associates ({workers.length})
-                            </h3>
-                            <div className="space-y-3 max-h-60 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-700">
-                                {workers.map(worker => (
-                                    <div key={worker._id} className="bg-zinc-900/50 rounded-lg p-3 border border-zinc-800 hover:border-zinc-700 transition-colors flex items-center justify-between group">
-                                        <div>
-                                            <p className="font-medium text-zinc-200 text-sm">{worker.username}</p>
-                                            <p className="text-xs text-zinc-500">{worker.email}</p>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded text-[10px] font-bold">
-                                                WORKER
-                                            </span>
-                                            <button
-                                                onClick={() => handleDeleteUser(worker._id)}
-                                                className="p-1.5 text-zinc-600 hover:bg-red-500/10 hover:text-red-400 rounded-md transition-colors opacity-0 group-hover:opacity-100"
-                                                title="Delete User"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        </div>
+                        {/* Team Section */}
+                        <motion.div variants={itemVariants}>
+                            <h2 className="text-xl font-bold text-white mb-4">Team Members</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Leades */}
+                                <motion.div
+                                    whileHover={{ y: -2 }}
+                                    className="bg-zinc-800/50 backdrop-blur-sm rounded-xl p-6 border border-zinc-700/50"
+                                >
+                                    <h3 className="text-sm font-bold text-zinc-300 mb-4 flex items-center gap-2 uppercase tracking-wide">
+                                        <Users size={16} className="text-amber-400" />
+                                        Leades ({bosses.length})
+                                    </h3>
+                                    <div className="space-y-3">
+                                        {bosses.map(boss => (
+                                            <div key={boss._id} className="bg-zinc-900/50 rounded-lg p-3 border border-zinc-800 flex items-center justify-between">
+                                                <div>
+                                                    <p className="font-medium text-zinc-200 text-sm">{boss.username}</p>
+                                                    <p className="text-xs text-zinc-500">{boss.email}</p>
+                                                </div>
+                                                <span className="px-2 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded text-[10px] font-bold">
+                                                    BOSS
+                                                </span>
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
-                                {workers.length === 0 && (
-                                    <p className="text-center text-zinc-600 text-xs py-4">No workers yet</p>
-                                )}
+                                </motion.div>
+
+                                {/* Associates */}
+                                <motion.div
+                                    whileHover={{ y: -2 }}
+                                    className="bg-zinc-800/50 backdrop-blur-sm rounded-xl p-6 border border-zinc-700/50"
+                                >
+                                    <h3 className="text-sm font-bold text-zinc-300 mb-4 flex items-center gap-2 uppercase tracking-wide">
+                                        <Users size={16} className="text-indigo-400" />
+                                        Associates ({workers.length})
+                                    </h3>
+                                    <div className="space-y-3 max-h-60 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-700">
+                                        {workers.map(worker => (
+                                            <div key={worker._id} className="bg-zinc-900/50 rounded-lg p-3 border border-zinc-800 hover:border-zinc-700 transition-colors flex items-center justify-between group">
+                                                <div>
+                                                    <p className="font-medium text-zinc-200 text-sm">{worker.username}</p>
+                                                    <p className="text-xs text-zinc-500">{worker.email}</p>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded text-[10px] font-bold">
+                                                        WORKER
+                                                    </span>
+                                                    <button
+                                                        onClick={() => handleDeleteUser(worker._id)}
+                                                        className="p-1.5 text-zinc-600 hover:bg-red-500/10 hover:text-red-400 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+                                                        title="Delete User"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {workers.length === 0 && (
+                                            <p className="text-center text-zinc-600 text-xs py-4">No workers yet</p>
+                                        )}
+                                    </div>
+                                </motion.div>
                             </div>
                         </motion.div>
-                    </div>
-                </motion.div>
-            </motion.div>
+                    </>
+                )}
+            </div>
 
             {/* Modals */}
             <AnimatePresence>
