@@ -131,4 +131,4 @@ npm run dev
 5.  Open a Pull Request
 
 ---
-&copy; 2024 Legal Task Manager
+&copy; 2026 Legal Task Manager
