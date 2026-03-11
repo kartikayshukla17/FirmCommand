@@ -26,25 +26,33 @@ const ForgotPassword = () => {
     };
 
     return (
-        <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
-            <div className="max-w-md w-full bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xl p-8">
-                <Link to="/login" className="flex items-center text-zinc-400 hover:text-white mb-6 text-sm transition-colors">
+        <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--fc-bg-deep)', fontFamily: 'var(--fc-font-sans)' }}>
+            <div className="max-w-md w-full fc-glass p-8 rounded-2xl" style={{ boxShadow: 'var(--fc-shadow-lg)' }}>
+                <Link to="/login" className="flex items-center mb-6 text-sm transition-opacity hover:opacity-80" style={{ color: 'var(--fc-text-secondary)', textDecoration: 'none' }}>
                     <ArrowLeft size={16} className="mr-1" /> Back to Login
                 </Link>
 
-                <h2 className="text-3xl font-bold text-white mb-2">Forgot Password</h2>
-                <p className="text-zinc-400 mb-6 text-sm">Enter your email address to receive a password reset link.</p>
+                <h2 className="fc-serif" style={{ fontSize: '1.875rem', color: 'var(--fc-text-primary)', marginBottom: '0.5rem' }}>Forgot Password</h2>
+                <p style={{ color: 'var(--fc-text-muted)', marginBottom: '1.5rem', fontSize: '0.875rem' }}>Enter your email address to receive a password reset link.</p>
 
-                {error && <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg text-sm">{error}</div>}
-                {message && <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 text-green-400 rounded-lg text-sm">{message}</div>}
+                {error && (
+                    <div className="mb-4 p-3 rounded-lg text-sm" style={{ background: 'var(--fc-danger-dim)', border: '1px solid rgba(229,91,91,0.2)', color: 'var(--fc-danger)' }}>
+                        {error}
+                    </div>
+                )}
+                {message && (
+                    <div className="mb-4 p-3 rounded-lg text-sm" style={{ background: 'var(--fc-success-dim)', border: '1px solid rgba(52,211,153,0.2)', color: 'var(--fc-success)' }}>
+                        {message}
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium mb-1.5 text-zinc-300">Email Address</label>
+                        <label className="fc-label">Email Address</label>
                         <input
                             type="email"
                             required
-                            className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-white outline-none transition-all placeholder:text-zinc-600"
+                            className="fc-input"
                             placeholder="Enter your email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -54,7 +62,8 @@ const ForgotPassword = () => {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className={`w-full py-3.5 rounded-xl font-medium transition-all shadow-lg shadow-indigo-500/20 ${isLoading ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500 text-white'}`}
+                        className="fc-btn-brass w-full py-3 rounded-xl disabled:opacity-70 disabled:cursor-not-allowed"
+                        style={{ fontSize: '0.875rem', fontWeight: 600 }}
                     >
                         {isLoading ? 'Sending...' : 'Send Reset Link'}
                     </button>

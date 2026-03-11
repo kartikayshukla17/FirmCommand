@@ -1,19 +1,25 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle, Info, CheckCircle, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { AlertTriangle, Info, CheckCircle } from 'lucide-react';
 
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, type = 'danger', confirmText = 'Confirm', cancelText = 'Cancel' }) => {
     if (!isOpen) return null;
 
     const icons = {
-        danger: <AlertTriangle className="text-red-500" size={32} />,
-        info: <Info className="text-blue-500" size={32} />,
-        success: <CheckCircle className="text-emerald-500" size={32} />
+        danger: <AlertTriangle style={{ color: 'var(--fc-danger)' }} size={32} />,
+        info: <Info style={{ color: 'var(--fc-info)' }} size={32} />,
+        success: <CheckCircle style={{ color: 'var(--fc-teal-light)' }} size={32} />
     };
 
-    const confirmColors = {
-        danger: 'bg-red-600 hover:bg-red-500 border-red-500/20 text-white',
-        info: 'bg-blue-600 hover:bg-blue-500 border-blue-500/20 text-white',
-        success: 'bg-emerald-600 hover:bg-emerald-500 border-emerald-500/20 text-white'
+    const confirmStyles = {
+        danger: { background: 'var(--fc-danger)', color: '#fff', border: '1px solid var(--fc-danger)' },
+        info: { background: 'linear-gradient(135deg, var(--fc-brass) 0%, var(--fc-brass-dim) 100%)', color: 'var(--fc-bg-deep)', border: '1px solid var(--fc-brass)' },
+        success: { background: 'linear-gradient(135deg, var(--fc-teal) 0%, var(--fc-teal-dim) 100%)', color: '#fff', border: '1px solid var(--fc-teal)' }
+    };
+
+    const iconBgStyles = {
+        danger: { background: 'var(--fc-danger-dim)', border: '1px solid rgba(229,91,91,0.2)' },
+        info: { background: 'var(--fc-brass-glow)', border: '1px solid var(--fc-border-warm)' },
+        success: { background: 'var(--fc-teal-glow)', border: '1px solid rgba(42,124,111,0.2)' }
     };
 
     return (
@@ -22,7 +28,8 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, type = 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                className="absolute inset-0"
+                style={{ background: 'rgba(5, 9, 18, 0.85)', backdropFilter: 'blur(8px)' }}
                 onClick={onClose}
             />
 
@@ -30,28 +37,34 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, type = 
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="relative bg-zinc-900 rounded-xl shadow-2xl border border-zinc-800 w-full max-w-md p-6 overflow-hidden"
+                className="relative w-full max-w-md p-6 rounded-xl overflow-hidden"
+                style={{
+                    background: 'var(--fc-bg-raised)',
+                    border: '1px solid var(--fc-border)',
+                    boxShadow: 'var(--fc-shadow-lg)',
+                }}
             >
                 <div className="flex flex-col items-center text-center">
-                    <div className={`p-4 rounded-full bg-zinc-800/50 border mb-4 ${type === 'danger' ? 'border-red-500/20 bg-red-500/10' : 'border-zinc-700'}`}>
+                    <div className="p-4 rounded-full mb-4" style={iconBgStyles[type]}>
                         {icons[type]}
                     </div>
 
-                    <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
-                    <p className="text-zinc-400 text-sm mb-8 leading-relaxed">
+                    <h3 className="fc-serif" style={{ fontSize: '1.25rem', color: 'var(--fc-text-primary)', marginBottom: '0.5rem' }}>{title}</h3>
+                    <p style={{ color: 'var(--fc-text-secondary)', fontSize: '0.875rem', marginBottom: '2rem', lineHeight: 1.6 }}>
                         {message}
                     </p>
 
                     <div className="flex gap-3 w-full">
                         <button
                             onClick={onClose}
-                            className="flex-1 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg font-medium transition-colors border border-zinc-700"
+                            className="fc-btn-ghost flex-1 py-2.5 rounded-lg font-medium"
                         >
                             {cancelText}
                         </button>
                         <button
                             onClick={onConfirm}
-                            className={`flex-1 py-2.5 rounded-lg font-medium transition-colors border shadow-lg ${confirmColors[type]}`}
+                            className="flex-1 py-2.5 rounded-lg font-medium transition-all cursor-pointer"
+                            style={{ ...confirmStyles[type], boxShadow: type === 'danger' ? '0 4px 12px rgba(229,91,91,0.2)' : 'var(--fc-shadow-brass)' }}
                         >
                             {confirmText}
                         </button>

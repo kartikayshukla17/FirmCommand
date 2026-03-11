@@ -1,71 +1,61 @@
 # FirmCommand
 
 > **⚠️ IMPORTANT NOTICE: OTP DISPLAY**
-> Due to reliability issues with the email service (Nodemailer) on the current deployment environment (Render/Localhost), **OTPs (One-Time Passwords) are currently displayed directly on the screen** during Login/Registration.
->
-> When prompted for an OTP, look for a **Blue/Indigo Alert Box** at the top of the form containing your code (e.g., `DEV OTP Code: 123456`). This ensures you can access the application without waiting for email delivery.
+> Due to reliability issues with the email service (Nodemailer) on the current deployment environment, **OTPs (One-Time Passwords) are currently displayed directly on the screen** during Login/Registration. Look for a **Blue/Indigo Alert Box** at the top of the form containing your code.
 
 ---
 
 ## 📋 Overview
 
-**Legal Task Manager** is a specialized Task Management System designed for small-scale law firms. It streamlines collaboration between **Leads** (Senior Lawyers/Partners) and **Associates** (Junior Lawyers/Paralegals), resolving the chaos of WhatsApp-based task delegation.
+**FirmCommand** (formerly Legal Task Manager) is a specialized Task Management System designed exclusively for small-scale law firms. It streamlines collaboration between **Leads** (Senior Lawyers/Partners) and **Associates** (Junior Lawyers/Paralegals), resolving the chaos of WhatsApp-based task delegation.
 
-The system enforces a strict hierarchy where data is isolated by Organization, ensuring privacy and focused workflows.
+The system enforces a strict hierarchy where data is securely isolated by Organization, ensuring client privacy and focused workflows. Everything runs on a sleek, dark-themed, motion-rich interface built for focus and clarity.
 
 ## 👥 User Roles
 
-The application has been refactored to use professional titles:
+1.  **Lead (Admin)**:
+    *   Creates the Organization workspace.
+    *   Invites Associates via a unique secure code.
+    *   Creates and Delegates Tasks across a Kanban board.
+    *   Reviews completed work and manages the team dashboard.
+    *   Accesses full workspace analytics and workload metrics.
 
-1.  **Lead (formerly Boss)**:
-    *   Creates the Organization.
-    *   Invites Associates.
-    *   Creates and Assigns Tasks.
-    *   Reviews completed work (Approve/Reject).
-    *   Has full administrative control over the firm's workspace.
-
-2.  **Associate (formerly Worker)**:
-    *   Joins an existing Organization via Code.
-    *   Receives tasks from the Lead.
-    *   Submit updates and mark tasks as Completed.
-    *   Cannot see other Associates' tasks unless specified (Data Isolation).
+2.  **Associate (Worker)**:
+    *   Joins an existing Organization.
+    *   Receives and organizes tasks.
+    *   Submits updates, uploads proof of work, and marks tasks for Review.
+    *   Data is isolated — they cannot see tasks assigned to other Associates.
 
 ## ✨ Key Features
 
-*   **Organization Management**: Unique Organization Codes for easy team onboarding.
-*   **Task Lifecycle**:
-    *   *Pending* -> *In Progress* -> *Completed* -> *Reviewed (Approved/Rejected)*.
-*   **Real-time Notifications**: Instant alerts for task assignments, updates, and approvals using **Socket.io**.
-*   **Data Isolation**: Strict separation of data between different law firms.
-*   **Smart Dashboards**: Tailored views for Leads (Management view) and Associates (Work view).
-*   **Secure Authentication**: JWT-based Auth with HTTP-Only Cookies and Multi-Factor Authentication (OTP).
-*   **Performance Optimized**:
-    *   **Lazy Loading**: Route-based code splitting for faster initial load.
-    *   **Skeleton UI**: Visual placeholders for improved perceived performance during data fetching.
-    *   **Conditional Rendering**: Smooth state transitions.
+*   **Beautiful UI/UX**: A bespoke, dark-mode-first aesthetic with glassmorphism, fluid animations (Framer Motion), and a color palette designed specifically to reduce eye strain.
+*   **Comprehensive Dashboards**: 
+    *   **Tasks Hub:** Kanban, List, and Table views for tracking assignments.
+    *   **Analytics Tab:** Visual charts tracking task distribution, bottlenecks, and overall firm completion rates.
+    *   **Team Management:** Detailed associate metrics. Click on any associate to deal deeper into their active workload and track their efficiency.
+*   **Organization Lifecycle**: Full control from creation, to adding users, managing join requests, and even safely dissolving the firm when required.
+*   **Real-time Notifications**: Instant alerts for task assignments and status changes using **Socket.io**.
+*   **Secure Authentication**: JWT-based Auth with HTTP-Only Cookies and Multi-Factor (OTP).
 
 ## 🛠️ Tech Stack
 
 **Frontend:**
 *   **React** (Vite)
-*   **Tailwind CSS** (Styling)
-*   **Framer Motion** (Animations)
-*   **Axios** (API Requests)
-*   **Socket.io Client** (Real-time connection)
+*   **Vanilla CSS / Tailwind** (Custom Design System)
+*   **Framer Motion** (Fluid UI Animations)
+*   **Axios** & **React Router**
 
 **Backend:**
 *   **Node.js & Express**
 *   **MongoDB & Mongoose** (Database)
 *   **Socket.io** (WebSocket Server)
-*   **JWT** (JSON Web Tokens)
-*   **Bcryptjs** (Password Security)
+*   **JWT & Bcryptjs** (Auth & Security)
+*   **Nodemailer** / **Multer** 
 
 ## 🚀 Setup & Installation
 
-Follow these steps to run the project locally:
-
 ### Prerequisites
-*   Node.js (v16+)
+*   Node.js (v18+)
 *   MongoDB (Local or Atlas URL)
 
 ### 1. Clone the Repository
@@ -75,7 +65,6 @@ cd task-manager-for-small-scale-law-firms
 ```
 
 ### 2. Backend Setup
-Navigate to the backend folder:
 ```bash
 cd backend
 npm install
@@ -89,13 +78,13 @@ JWT_SECRET=your_jwt_secret_key
 NODE_ENV=development
 ```
 
-Run the server:
+Run the server & seed database:
 ```bash
-# Starts server on localhost:5001
-npm run dev
+node seedDB.js # Optional: generates demo data
+npm run dev    # Starts server
 ```
 
-### 4. Frontend Setup
+### 3. Frontend Setup
 Open a new terminal and navigate to the frontend folder:
 ```bash
 cd frontend
@@ -104,26 +93,7 @@ npm run dev
 # Access at http://localhost:5173
 ```
 
-## 🔌 API Endpoints
-
-### Auth
-*   `POST /api/auth/register` - Create Org (Lead) or Join Org (Associate)
-*   `POST /api/auth/login` - Login
-*   `GET /api/auth/me` - Get current user profile
-*   `POST /api/auth/verify-otp` - Verify Account
-
-### Tasks
-*   `GET /api/tasks` - Get all tasks (Lead) or Assigned tasks (Associate)
-*   `POST /api/tasks` - Create Task (Lead Only)
-*   `PUT /api/tasks/:id` - Update Task Status
-*   `PUT /api/tasks/:id/approve` - Approve Task (Lead Only)
-
-### Organization
-*   `GET /api/organization/requests` - View Join Requests
-*   `POST /api/organization/requests/:id/approve` - Approve Join Request
-
 ## 🤝 Contribution
-
 1.  Fork the Project
 2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
 3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
@@ -131,4 +101,4 @@ npm run dev
 5.  Open a Pull Request
 
 ---
-&copy; 2026 Legal Task Manager
+&copy; 2026 FirmCommand Inc.

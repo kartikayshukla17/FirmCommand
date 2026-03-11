@@ -35,14 +35,11 @@ router.get('/', protect, asyncHandler(async (req, res) => {
     res.json(tasks);
 }));
 
-// @desc    Create a Task
-// @route   POST /api/tasks
-// @access  Private (Lead Only)
 router.post('/', protect, leadOnly, asyncHandler(async (req, res) => {
     const {
         title, description, type,
         property_filters, assigned_to,
-        micro_tasks
+        micro_tasks, deadline
     } = req.body;
 
     // Sanitize property_filters to remove empty strings
@@ -60,6 +57,7 @@ router.post('/', protect, leadOnly, asyncHandler(async (req, res) => {
         type,
         property_filters: sanitizedFilters,
         assigned_to: assigned_to || undefined, // Handle empty string for ObjectId
+        deadline: deadline || undefined,
         assigned_by: req.user._id,
         organization: req.user.organization, // Auto-assign to current Org
         micro_tasks: micro_tasks || [],
@@ -149,7 +147,7 @@ router.patch('/:id', protect, asyncHandler(async (req, res, next) => {
     const {
         proof_of_work, micro_tasks, status,
         // Lead update fields
-        title, description, type, assigned_to, property_filters
+        title, description, type, assigned_to, property_filters, deadline
     } = req.body;
 
     // Logic: Lead full update
@@ -158,6 +156,7 @@ router.patch('/:id', protect, asyncHandler(async (req, res, next) => {
         if (description) task.description = description;
         if (type) task.type = type;
         if (assigned_to) task.assigned_to = assigned_to;
+        if (deadline !== undefined) task.deadline = deadline;
 
         // Handle property_filters update safely
         if (property_filters) {

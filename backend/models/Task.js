@@ -26,7 +26,7 @@ const taskSchema = new mongoose.Schema({
     assigned_to: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     assigned_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     organization: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: true },
-
+    deadline: { type: Date },
 
     // Submission
     proof_of_work: { type: String }, // URL or text description

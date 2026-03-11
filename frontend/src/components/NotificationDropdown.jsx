@@ -11,90 +11,114 @@ const NotificationDropdown = () => {
 
     return (
         <div className="relative">
-            <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+            <button
                 onClick={toggleDropdown}
-                className="relative p-2 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+                className="relative p-2 rounded-lg transition-all"
+                style={{
+                    color: 'var(--fc-text-muted)',
+                    background: 'none',
+                    border: '1px solid transparent',
+                    cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.color = 'var(--fc-purple)';
+                    e.currentTarget.style.background = 'var(--fc-purple-dim)';
+                    e.currentTarget.style.borderColor = 'rgba(140,114,219,0.25)';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.color = 'var(--fc-text-muted)';
+                    e.currentTarget.style.background = 'none';
+                    e.currentTarget.style.borderColor = 'transparent';
+                }}
             >
                 <Bell size={20} />
                 {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-zinc-900">
+                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 text-[10px] font-bold flex items-center justify-center rounded-full"
+                        style={{ background: 'var(--fc-danger)', color: '#fff', border: '2px solid var(--fc-bg-raised)' }}>
                         {unreadCount}
                     </span>
                 )}
-            </motion.button>
+            </button>
 
             <AnimatePresence>
                 {isOpen && (
                     <>
-                        <div
-                            className="fixed inset-0 z-40"
-                            onClick={() => setIsOpen(false)}
-                        />
+                        <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
                         <motion.div
                             initial={{ opacity: 0, y: 10, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 10, scale: 0.95 }}
                             transition={{ duration: 0.2 }}
-                            className="absolute right-0 mt-2 w-80 sm:w-96 bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl z-50 overflow-hidden"
+                            className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl overflow-hidden z-50"
+                            style={{
+                                background: 'var(--fc-bg-raised)',
+                                border: '1px solid var(--fc-border)',
+                                boxShadow: 'var(--fc-shadow-lg)',
+                            }}
                         >
-                            <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/95 backdrop-blur">
+                            <div className="p-4 flex justify-between items-center"
+                                style={{ borderBottom: '1px solid var(--fc-border)', background: 'var(--fc-bg-surface)' }}>
                                 <div className="flex items-center gap-2">
-                                    <h3 className="font-semibold text-white">Notifications</h3>
-                                    {/* Connection Status Indicator */}
-                                    <div className={`w-2 h-2 rounded-full ${useSocket().socket?.connected ? 'bg-green-500' : 'bg-red-500'}`} title={useSocket().socket?.connected ? 'Connected' : 'Disconnected'} />
+                                    <h3 className="fc-heading" style={{ fontWeight: 600, color: 'var(--fc-text-primary)', fontSize: '1rem' }}>Notifications</h3>
+                                    <div className="w-2 h-2 rounded-full" style={{ background: useSocket().socket?.connected ? 'var(--fc-green)' : 'var(--fc-danger)' }}
+                                        title={useSocket().socket?.connected ? 'Connected' : 'Disconnected'} />
                                 </div>
                                 <div className="flex gap-2">
                                     {Notification.permission !== 'granted' && (
-                                        <button
-                                            onClick={requestPermission}
-                                            className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors font-medium"
-                                        >
+                                        <button onClick={requestPermission}
+                                            style={{ fontSize: '0.75rem', color: 'var(--fc-purple)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}
+                                            className="hover:opacity-80 transition-opacity">
                                             Enable Desktop
                                         </button>
                                     )}
                                     {notifications.length > 0 && (
-                                        <button
-                                            onClick={clearAll}
-                                            className="text-xs text-zinc-500 hover:text-red-400 transition-colors"
-                                        >
+                                        <button onClick={clearAll}
+                                            style={{ fontSize: '0.75rem', color: 'var(--fc-text-dim)', background: 'none', border: 'none', cursor: 'pointer' }}
+                                            className="hover:opacity-80 transition-opacity">
                                             Clear all
                                         </button>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700">
+                            <div className="max-h-[400px] overflow-y-auto">
                                 {notifications.length === 0 ? (
-                                    <div className="p-8 text-center text-zinc-500">
-                                        <Bell size={32} className="mx-auto mb-2 opacity-20" />
-                                        <p className="text-sm">No new notifications</p>
+                                    <div className="p-8 text-center">
+                                        <Bell size={32} className="mx-auto mb-2" style={{ color: 'var(--fc-text-dim)', opacity: 0.3 }} />
+                                        <p style={{ fontSize: '0.875rem', color: 'var(--fc-text-dim)' }}>No new notifications</p>
                                     </div>
                                 ) : (
-                                    <div className="divide-y divide-zinc-800/50">
+                                    <div>
                                         {notifications.map((notification) => (
                                             <div
                                                 key={notification._id || Math.random()}
-                                                className={`p-4 hover:bg-zinc-800/50 transition-colors relative group ${!notification.read ? 'bg-zinc-800/20' : ''}`}
+                                                className="p-4 transition-colors relative group"
+                                                style={{
+                                                    borderBottom: '1px solid var(--fc-border-subtle)',
+                                                    background: !notification.read ? 'var(--fc-purple-dim)' : 'transparent',
+                                                }}
+                                                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--fc-bg-hover)'; }}
+                                                onMouseLeave={(e) => { e.currentTarget.style.background = !notification.read ? 'var(--fc-purple-dim)' : 'transparent'; }}
                                             >
                                                 <div className="flex gap-3">
-                                                    <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${!notification.read ? 'bg-indigo-500' : 'bg-zinc-600'}`} />
+                                                    <div className="mt-1 w-2 h-2 rounded-full flex-shrink-0"
+                                                        style={{ background: !notification.read ? 'var(--fc-purple)' : 'var(--fc-text-dim)' }} />
                                                     <div className="flex-1">
-                                                        <h4 className={`text-sm font-medium ${!notification.read ? 'text-white' : 'text-zinc-400'}`}>
+                                                        <h4 style={{ fontSize: '0.875rem', fontWeight: 500, color: !notification.read ? 'var(--fc-text-primary)' : 'var(--fc-text-secondary)' }}>
                                                             {notification.title}
                                                         </h4>
-                                                        <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+                                                        <p style={{ fontSize: '0.75rem', color: 'var(--fc-text-muted)', marginTop: '0.25rem', lineHeight: 1.5 }}>
                                                             {notification.message}
                                                         </p>
-                                                        <span className="text-[10px] text-zinc-600 mt-2 block">
+                                                        <span style={{ fontSize: '0.625rem', color: 'var(--fc-text-dim)', marginTop: '0.5rem', display: 'block' }}>
                                                             Just now
                                                         </span>
                                                     </div>
                                                     {!notification.read && (
                                                         <button
                                                             onClick={() => markAsRead(notification._id)}
-                                                            className="opacity-0 group-hover:opacity-100 p-1 hover:bg-zinc-700 rounded transition-all text-zinc-400 hover:text-green-400"
+                                                            className="opacity-0 group-hover:opacity-100 p-1 rounded transition-all"
+                                                            style={{ color: 'var(--fc-text-dim)', background: 'none', border: 'none', cursor: 'pointer' }}
                                                             title="Mark as read"
                                                         >
                                                             <Check size={14} />

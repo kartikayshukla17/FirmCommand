@@ -19,6 +19,7 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 
 import { createServer } from 'http';
 import { initSocket } from './utils/socket.js';
+import keepAlive from './utils/cronJobs.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -35,6 +36,9 @@ app.use(cors({
 
 // Initialize Socket.io
 initSocket(httpServer);
+
+// Start keep-alive cron job
+keepAlive();
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

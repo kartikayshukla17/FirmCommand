@@ -1,2 +1,293 @@
+@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800,900&f[]=satoshi@300,400,500,700,900&display=swap');
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* ═══════════════════════════════════════════════════════════
+   FIRMCOMMAND — Contextual Distinctive Aesthetic
+   Colors provided from design spec (inspired by TaskWhiz / Basis Grotesque)
+   Typography: Cabinet Grotesk + Satoshi
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* Core Backgrounds */
+  --fc-bg-deep:       #121214;
+  --fc-bg-panel:      #1B1B1B;
+  --fc-bg-raised:     #242426;
+  --fc-bg-surface:    #303030;
+  --fc-bg-hover:      #3A3A3E;
+
+  /* Spec Colors */
+  --fc-purple:        #8C72DB;
+  --fc-purple-hover:  #A38DF0;
+  --fc-purple-dim:    rgba(140, 114, 219, 0.15);
+
+  --fc-blue:          #72A2DA;
+  --fc-blue-hover:    #89BAF1;
+  --fc-blue-dim:      rgba(114, 162, 218, 0.15);
+
+  --fc-orange:        #DB8648;
+  --fc-orange-hover:  #F39D5D;
+  --fc-orange-dim:    rgba(219, 134, 72, 0.15);
+
+  --fc-green:         #87C073;
+  --fc-green-hover:   #9DDA8A;
+  --fc-green-dim:     rgba(135, 192, 115, 0.15);
+
+  --fc-red:           #DA6B6B;
+  --fc-red-hover:     #F08080;
+  --fc-red-dim:       rgba(218, 107, 107, 0.15);
+
+  /* Texts */
+  --fc-text-primary:  #FFFFFF;
+  --fc-text-secondary:#B4B4B4;
+  --fc-text-muted:    #7E7E7E;
+  --fc-text-dim:      #505050;
+
+  /* Borders / Lines */
+  --fc-border:        #303030;
+  --fc-border-subtle: rgba(255, 255, 255, 0.05);
+  --fc-border-hover:  rgba(255, 255, 255, 0.12);
+
+  /* Radii */
+  --fc-radius-sm:     8px;
+  --fc-radius-md:     14px;
+  --fc-radius-lg:     24px;
+  --fc-radius-xl:     32px;
+
+  /* Typography */
+  --fc-font-heading:  'Cabinet Grotesk', -apple-system, sans-serif;
+  --fc-font-body:     'Satoshi', -apple-system, sans-serif;
+  
+  /* Shadows */
+  --fc-shadow-card:   0 16px 40px -8px rgba(0, 0, 0, 0.4);
+  --fc-shadow-glow:   0 0 40px -10px rgba(140, 114, 219, 0.2);
+}
+
+/* ── Global Resets ────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+body {
+  font-family: var(--fc-font-body);
+  background-color: var(--fc-bg-deep);
+  color: var(--fc-text-primary);
+  margin: 0; padding: 0;
+  line-height: 1.5;
+  overflow-x: hidden;
+  background-image: 
+    radial-gradient(circle at top right, rgba(140, 114, 219, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at bottom left, rgba(114, 162, 218, 0.04) 0%, transparent 40%);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: var(--fc-purple-dim);
+  color: var(--fc-purple);
+}
+
+/* ── Typography Classes ───────────────────────────────── */
+h1, h2, h3, h4, h5, h6, .fc-heading {
+  font-family: var(--fc-font-heading);
+  letter-spacing: -0.01em;
+}
+
+/* ── Scrollbar ────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--fc-bg-surface); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--fc-border-hover); }
+
+/* ── Utilities ────────────────────────────────────────── */
+
+.fc-card {
+  background: var(--fc-bg-panel);
+  border: 1px solid var(--fc-border-subtle);
+  border-radius: var(--fc-radius-lg);
+  box-shadow: var(--fc-shadow-card);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), 
+              box-shadow 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+              border-color 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+.fc-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.fc-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--fc-border-hover);
+  box-shadow: 0 24px 50px -12px rgba(0, 0, 0, 0.6), var(--fc-shadow-glow);
+}
+.fc-card:hover::before {
+  opacity: 1;
+}
+.fc-card:active {
+  transform: translateY(-2px) scale(0.99);
+}
+
+.fc-card-raised {
+  background: var(--fc-bg-raised);
+  border: 1px solid var(--fc-border-subtle);
+  border-radius: var(--fc-radius-md);
+}
+
+.fc-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--fc-bg-deep);
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-radius-md);
+  color: var(--fc-text-primary);
+  font-family: var(--fc-font-body);
+  font-size: 0.9rem;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  outline: none;
+}
+.fc-input::placeholder { color: var(--fc-text-muted); }
+.fc-input:focus {
+  border-color: var(--fc-purple);
+  box-shadow: 0 0 0 3px var(--fc-purple-dim);
+  background: var(--fc-bg-panel);
+}
+
+.fc-input-icon {
+  padding-left: 40px;
+}
+
+.fc-btn-primary {
+  background: var(--fc-purple);
+  color: #fff;
+  font-family: var(--fc-font-heading);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--fc-radius-md);
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  padding: 10px 16px;
+}
+.fc-btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(255,255,255,0.1), transparent);
+}
+.fc-btn-primary:hover {
+  background: var(--fc-purple-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px var(--fc-purple-dim);
+}
+.fc-btn-primary:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.fc-btn-ghost {
+  background: transparent;
+  color: var(--fc-text-secondary);
+  font-family: var(--fc-font-heading);
+  font-weight: 600;
+  border: 1px solid var(--fc-border);
+  cursor: pointer;
+  border-radius: var(--fc-radius-md);
+  transition: all 0.2s ease;
+  padding: 10px 16px;
+}
+.fc-btn-ghost:hover {
+  background: var(--fc-bg-surface);
+  color: var(--fc-text-primary);
+  border-color: var(--fc-text-muted);
+}
+.fc-btn-ghost:active {
+  transform: scale(0.98);
+}
+
+.fc-btn-danger {
+  background: var(--fc-red-dim);
+  color: var(--fc-red);
+  font-family: var(--fc-font-heading);
+  font-weight: 600;
+  border: 1px solid rgba(218, 107, 107, 0.2);
+  cursor: pointer;
+  border-radius: var(--fc-radius-md);
+  transition: all 0.2s ease;
+  padding: 10px 16px;
+}
+.fc-btn-danger:hover {
+  background: rgba(218, 107, 107, 0.25);
+  border-color: var(--fc-red);
+}
+
+.fc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-family: var(--fc-font-body);
+}
+
+.fc-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--fc-text-muted);
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+  font-family: var(--fc-font-heading);
+}
+
+/* ── Keyframe Animations ──────────────────────────────── */
+
+@keyframes fc-fade-in-up {
+  0% { opacity: 0; transform: translateY(16px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes fc-spin {
+  to { transform: rotate(360deg); }
+}
+
+.fc-stagger > * {
+  animation: fc-fade-in-up 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.fc-stagger > *:nth-child(1) { animation-delay: 50ms; }
+.fc-stagger > *:nth-child(2) { animation-delay: 100ms; }
+.fc-stagger > *:nth-child(3) { animation-delay: 150ms; }
+.fc-stagger > *:nth-child(4) { animation-delay: 200ms; }
+.fc-stagger > *:nth-child(5) { animation-delay: 250ms; }
+.fc-stagger > *:nth-child(6) { animation-delay: 300ms; }
+.fc-stagger > *:nth-child(7) { animation-delay: 350ms; }
+.fc-stagger > *:nth-child(8) { animation-delay: 400ms; }
+
+/* Header Glass */
+.fc-header-glass {
+  background: rgba(18, 18, 20, 0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--fc-border-subtle);
+}
+
+/* Progress bar inside cards */
+.fc-progress-bar {
+  height: 4px;
+  background: var(--fc-bg-deep);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+.fc-progress-fill {
+  height: 100%;
+  background: var(--fc-purple);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}

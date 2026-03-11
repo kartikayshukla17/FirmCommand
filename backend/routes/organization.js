@@ -115,6 +115,41 @@ router.post('/users', protect, leadOnly, asyncHandler(async (req, res, next) => 
     res.status(201).json(user);
 }));
 
+// @desc    Get All Users in Organization
+// @route   GET /api/organization/users
+// @access  Private (Lead Only)
+router.get('/users', protect, leadOnly, asyncHandler(async (req, res) => {
+    const users = await User.find({ organization: req.user.organization }, '-password_hash').sort({ createdAt: -1 });
+    res.json(users);
+}));
+
+// @desc    Remove User from Organization
+// @route   DELETE /api/organization/users/:id
+// @access  Private (Lead Only)
+router.delete('/users/:id', protect, leadOnly, asyncHandler(async (req, res, next) => {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+        return next(new ErrorResponse('User not found', 404));
+    }
+
+    // Must belong to the same org
+    if (user.organization.toString() !== req.user.organization.toString()) {
+        return next(new ErrorResponse('Not authorized', 403));
+    }
+
+    if (user.role === 'Lead') {
+        return next(new ErrorResponse('Cannot remove a Lead account', 403));
+    }
+
+    // Instead of deleting the user entirely from DB, usually we just remove them from org.
+    // Or we delete them. Wait, the frontend says "Remove Team Member... from this organization"
+    // Previously in auth.js it was await user.deleteOne();
+    await user.deleteOne(); // Keeping the previous behavior
+
+    res.json({ message: 'User removed matching previous behavior' });
+}));
+
 // @desc    Join Existing Organization (Free Agent)
 // @route   POST /api/organization/join-existing
 // @access  Private

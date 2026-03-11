@@ -5,7 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { Building2, Key, LogOut } from 'lucide-react';
 
 const JoinOrgScreen = () => {
-    const { user, logout, checkUser } = useAuth(); // checkUser to refresh state after join
+    const { user, logout, checkUser } = useAuth();
     const { showToast } = useToast();
     const [orgCode, setOrgCode] = useState('');
     const [role, setRole] = useState('Associate');
@@ -28,20 +28,19 @@ const JoinOrgScreen = () => {
 
     if (sent) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-zinc-950 p-6">
-                <div className="max-w-md w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-8 text-center space-y-4">
-                    <div className="w-16 h-16 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--fc-bg-deep)' }}>
+                <div className="max-w-md w-full p-8 text-center space-y-4 rounded-2xl"
+                    style={{ background: 'var(--fc-bg-raised)', border: '1px solid var(--fc-border)' }}>
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+                        style={{ background: 'var(--fc-teal-glow)', color: 'var(--fc-teal-light)' }}>
                         <Building2 size={32} />
                     </div>
-                    <h2 className="text-2xl font-bold text-white">Request Sent!</h2>
-                    <p className="text-zinc-400">
-                        Your request to join the organization has been sent to the Lead.
-                        Please wait for approval.
+                    <h2 className="fc-serif" style={{ fontSize: '1.5rem', color: 'var(--fc-text-primary)' }}>Request Sent!</h2>
+                    <p style={{ color: 'var(--fc-text-secondary)' }}>
+                        Your request to join the organization has been sent to the Lead. Please wait for approval.
                     </p>
-                    <button
-                        onClick={logout}
-                        className="text-indigo-400 hover:text-indigo-300 text-sm font-medium mt-4 inline-block"
-                    >
+                    <button onClick={logout} style={{ color: 'var(--fc-brass)', fontSize: '0.875rem', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', marginTop: '1rem' }}
+                        className="hover:opacity-80 transition-opacity">
                         Sign Out
                     </button>
                 </div>
@@ -50,18 +49,15 @@ const JoinOrgScreen = () => {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-zinc-950 p-6">
-            <div className="max-w-md w-full bg-zinc-900/50 backdrop-blur-xl border border-zinc-800 rounded-2xl p-8 shadow-2xl">
+        <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--fc-bg-deep)' }}>
+            <div className="max-w-md w-full fc-glass p-8 rounded-2xl" style={{ boxShadow: 'var(--fc-shadow-lg)' }}>
                 <div className="flex justify-between items-center mb-8">
                     <div>
-                        <h1 className="text-2xl font-bold text-white">Join Organization</h1>
-                        <p className="text-zinc-500 text-sm mt-1">Enter an organization code to join</p>
+                        <h1 className="fc-serif" style={{ fontSize: '1.5rem', color: 'var(--fc-text-primary)' }}>Join Organization</h1>
+                        <p style={{ color: 'var(--fc-text-muted)', fontSize: '0.875rem', marginTop: '0.25rem' }}>Enter an organization code to join</p>
                     </div>
-                    <button
-                        onClick={logout}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors text-sm font-medium border border-zinc-700 hover:border-zinc-600"
-                        title="Sign Out"
-                    >
+                    <button onClick={logout}
+                        className="fc-btn-ghost flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium">
                         <LogOut size={16} />
                         <span>Sign Out</span>
                     </button>
@@ -69,15 +65,16 @@ const JoinOrgScreen = () => {
 
                 <form onSubmit={handleJoin} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-zinc-400 mb-2">Organization Code</label>
+                        <label className="fc-label">Organization Code</label>
                         <div className="relative">
-                            <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
+                            <Key className="absolute left-3 top-1/2 -translate-y-1/2" size={18} style={{ color: 'var(--fc-text-dim)' }} />
                             <input
                                 type="text"
                                 required
                                 value={orgCode}
                                 onChange={(e) => setOrgCode(e.target.value.toUpperCase())}
-                                className="w-full pl-10 pr-4 py-3 bg-zinc-950 border border-zinc-700 rounded-xl text-white placeholder-zinc-600 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all font-mono tracking-wider"
+                                className="fc-input fc-input-icon uppercase tracking-wider"
+                                style={{ fontFamily: 'var(--fc-font-mono)' }}
                                 placeholder="16-CHARACTER-CODE"
                                 maxLength={16}
                             />
@@ -85,42 +82,40 @@ const JoinOrgScreen = () => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-zinc-400 mb-2">Join As</label>
+                        <label className="fc-label">Join As</label>
                         <div className="grid grid-cols-2 gap-3">
-                            <button
-                                type="button"
-                                onClick={() => setRole('Associate')}
-                                className={`p-3 rounded-xl border transition-all text-sm font-medium ${role === 'Associate'
-                                    ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400'
-                                    : 'bg-zinc-950 border-zinc-700 text-zinc-400 hover:border-zinc-600'
-                                    }`}
-                            >
+                            <button type="button" onClick={() => setRole('Associate')}
+                                className="p-3 rounded-xl text-sm font-medium transition-all"
+                                style={{
+                                    background: role === 'Associate' ? 'var(--fc-brass-glow)' : 'var(--fc-bg-deep)',
+                                    border: `1px solid ${role === 'Associate' ? 'var(--fc-brass)' : 'var(--fc-border)'}`,
+                                    color: role === 'Associate' ? 'var(--fc-brass)' : 'var(--fc-text-muted)',
+                                    cursor: 'pointer'
+                                }}>
                                 Associate
                             </button>
-                            <button
-                                type="button"
-                                onClick={() => setRole('Lead')}
-                                className={`p-3 rounded-xl border transition-all text-sm font-medium ${role === 'Lead'
-                                    ? 'bg-amber-500/10 border-amber-500 text-amber-400'
-                                    : 'bg-zinc-950 border-zinc-700 text-zinc-400 hover:border-zinc-600'
-                                    }`}
-                            >
+                            <button type="button" onClick={() => setRole('Lead')}
+                                className="p-3 rounded-xl text-sm font-medium transition-all"
+                                style={{
+                                    background: role === 'Lead' ? 'var(--fc-teal-glow)' : 'var(--fc-bg-deep)',
+                                    border: `1px solid ${role === 'Lead' ? 'var(--fc-teal)' : 'var(--fc-border)'}`,
+                                    color: role === 'Lead' ? 'var(--fc-teal-light)' : 'var(--fc-text-muted)',
+                                    cursor: 'pointer'
+                                }}>
                                 Lead
                             </button>
                         </div>
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full py-3 bg-white text-zinc-900 font-bold rounded-xl hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
+                    <button type="submit" disabled={loading}
+                        className="fc-btn-brass w-full py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ fontSize: '0.875rem' }}>
                         {loading ? 'Sending Request...' : 'Send Join Request'}
                     </button>
                 </form>
 
                 <div className="mt-6 text-center">
-                    <p className="text-zinc-600 text-xs">
+                    <p style={{ color: 'var(--fc-text-dim)', fontSize: '0.75rem' }}>
                         Don't have a code? Ask your organization administrator.
                     </p>
                 </div>
